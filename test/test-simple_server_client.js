@@ -1,4 +1,6 @@
+
 var msgpack_rpc = require('msgpack-rpc');
+
 module.exports = {
   'simple server handler' : function(assert, beforeExit) {
     var addition_called = false;
