@@ -1,5 +1,5 @@
 {
-  "name" : "msgpack-rpc",
+  "name" : "fast-msgpack-rpc",
   "version" : "0.0.1",
   "description" : "node-msgpack-rpc is an implementation of the Msgpack-RPC protocol specification for node.js",
   "homepage" : "https://github.com/bpot/node-msgpack-rpc",
@@ -13,5 +13,8 @@
   },
   "scripts" : {
       	"test":	"node test/all-tests.js"
-  }	    	
+  },
+  "dependencies" : {
+      "msgpack-0.4" : ">= 0.1.4"
+   }
 }
