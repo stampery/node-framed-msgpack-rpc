@@ -1,7 +1,12 @@
-node-msgpack-rpc
-================
+maxtaco/node-msgpack-rpc
+========================
 
 node-msgpack-rpc is an implementation of the [Msgpack-RPC](http://redmine.msgpack.org/projects/msgpack/wiki/RPCDesign) protocol specification for node.js.  Msgpack-RPC is built ontop of the very fast [MessagePack](http://msgpack.org) serialization format. This implementation supports tcp and unix socket transports (it may one day support UDP).
+
+This is a "fast" version of Msgpack-RPC.  The big difference here is that the length of the packet is prepended to each packet,
+meaning we don't need to keep iteratively decoding the packet over and over again.  Seems weird they left this out.   This protocol
+is not compatible with the existing Msgpack, but this module has the same API.
+
 
 Simple Usage
 ------------
