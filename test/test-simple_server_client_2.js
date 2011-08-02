@@ -23,35 +23,41 @@ module.exports = {
 	}
 
 
-	var handler = {
-	    'add' : function(a, b, response) { 
+	function ServerConnection (server, tcpStream) {
+	    var that = new msgpack_rpc.ServerConnection (server, tcpStream);
+	    that._verbose = true;
+	    that._name = "tester";
+
+	    that.add = function(a, b, response) { 
 		addition_called = true;
 		response.result(a + b);
-	    },
-	    'temperature' : function(temp, response) {
+	    };
+
+	    that.temperature = function(temp, response) {
 		test.equal(102.1, temp);
 		test.equal(undefined, response);
 		notification_received = true;
 		trigger ();
 		
-	    },
-	    'smush' : function (d, response) {
+	    };
+
+	    that.smush = function (d, response) {
 		var tot = 0;
 		for (var k in d) {
 		    tot += parseInt (k) + d[k];
 		}
 		response.result (tot);
 	    }
+
+	    return that;
 	};
-	
+
 	var client = null;
-	var transport = null;
-	var server = msgpack_rpc.createServer();
-	server.setHandler(handler);
+	var server = msgpack_rpc.createServer(ServerConnection);
 	var port = 8030;
 	
-	server.listen(8030, function() {
-	    transport = new msgpack_rpc.Transport ("127.0.0.1", 8030);
+	server.listen(port, function() {
+	    transport = new msgpack_rpc.Transport ("127.0.0.1", port);
 	    transport.connect (function () {
 		var client = new msgpack_rpc.Client (transport);
 		client.invoke('add', 5, 7, function(err, response) {
