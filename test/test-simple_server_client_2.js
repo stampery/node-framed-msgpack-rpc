@@ -27,27 +27,27 @@ module.exports = {
 	    var that = new msgpack_rpc.ServerConnection (server, tcpStream);
 	    that._verbose = true;
 	    that._name = "tester";
+	    that._programs = [ "P.v1" ];
 
-	    that.add = function(a, b, response) { 
+	    that.addHandler ('add', function(a, b, response) { 
 		addition_called = true;
 		response.result(a + b);
-	    };
+	    });
 
-	    that.temperature = function(temp, response) {
+	    that.addHandler ('temperature', function(temp, response) {
 		test.equal(102.1, temp);
 		test.equal(undefined, response);
 		notification_received = true;
 		trigger ();
-		
-	    };
+	    });
 
-	    that.smush = function (d, response) {
+	    that.addHandler ('smush', function (d, response) {
 		var tot = 0;
 		for (var k in d) {
 		    tot += parseInt (k) + d[k];
 		}
 		response.result (tot);
-	    }
+	    });
 
 	    return that;
 	};
@@ -59,7 +59,7 @@ module.exports = {
 	server.listen(port, function() {
 	    transport = new msgpack_rpc.Transport ("127.0.0.1", port);
 	    transport.connect (function () {
-		var client = new msgpack_rpc.Client (transport);
+		var client = new msgpack_rpc.Client (transport, "P.v1");
 		client.invoke('add', 5, 7, function(err, response) {
 		    responses_received ++;
 		    test.equal(5 + 7, response);
