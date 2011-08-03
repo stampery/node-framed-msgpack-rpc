@@ -27,7 +27,8 @@ module.exports = {
 	    var that = new msgpack_rpc.ServerConnection (server, tcpStream);
 	    that._verbose = true;
 	    that._name = "tester";
-	    that._programs = [ "P.v1" ];
+
+	    that.setProgram ("P.v1");
 
 	    that.addHandler ('add', function(a, b, response) { 
 		addition_called = true;
