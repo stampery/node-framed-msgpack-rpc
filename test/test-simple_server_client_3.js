@@ -28,26 +28,27 @@ module.exports = {
 	    that._verbose = true;
 	    that._name = "tester";
 
-	    that.setProgram ("P.v1");
-
-	    that.addHandler ('add', function(a, b, response) { 
-		addition_called = true;
-		response.result(a + b);
-	    });
-
-	    that.addHandler ('temperature', function(temp, response) {
-		test.equal(102.1, temp);
-		test.equal(undefined, response);
-		notification_received = true;
-		trigger ();
-	    });
-
-	    that.addHandler ('smush', function (d, response) {
-		var tot = 0;
-		for (var k in d) {
-		    tot += parseInt (k) + d[k];
+	    that.addProgram ("P.v1", { 
+		
+		add : function(a, b, response) { 
+		    addition_called = true;
+		    response.result(a + b);
+		},
+		
+		temperature : function(temp, response) {
+		    test.equal(102.1, temp);
+		    test.equal(undefined, response);
+		    notification_received = true;
+		    trigger ();
+		},
+		
+		smush :  function (d, response) {
+		    var tot = 0;
+		    for (var k in d) {
+			tot += parseInt (k) + d[k];
+		    }
+		    response.result (tot);
 		}
-		response.result (tot);
 	    });
 
 	    return that;
