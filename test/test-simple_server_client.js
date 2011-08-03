@@ -51,7 +51,11 @@ module.exports = {
 	};
 
 	var client = null;
-	var server = msgpack_rpc.createServer(ServerConnection);
+
+	var server = msgpack_rpc.createServer(
+	    function (server, tcpStream) {
+		return new ServerConnection (server, tcpStream); 
+	    });
 	
 	server.listen(8030, function() {
 	    client = msgpack_rpc.createClient(null, 8030, function() {
