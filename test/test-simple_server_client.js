@@ -27,7 +27,9 @@ module.exports = {
 	    that._verbose = true;
 	    that._name = "tester";
 
-	    that.addHandler ('add', function(a, b, response) { 
+	    that.addHandler ('add', function(args, response) { 
+		var a = args[0];
+		var b = args[1];
 		addition_called = true;
 		response.result(a + b);
 	    });
@@ -59,7 +61,7 @@ module.exports = {
 	
 	server.listen(8030, function() {
 	    client = msgpack_rpc.createClient(null, 8030, function() {
-		client.invoke('add', 5, 7, function(err, response) {
+		client.invoke('add', [5, 7], function(err, response) {
 		    responses_received ++;
 		    test.equal(5 + 7, response);
 		    trigger ();

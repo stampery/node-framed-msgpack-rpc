@@ -30,7 +30,9 @@ module.exports = {
 
 	    that.addProgram ("P.v1", { 
 		
-		add : function(a, b, response) { 
+		add : function(args, response) { 
+		    var a = args[0];
+		    var b = args[1];
 		    addition_called = true;
 		    response.result(a + b);
 		},
@@ -66,7 +68,7 @@ module.exports = {
 	    transport = new msgpack_rpc.Transport ("127.0.0.1", port);
 	    transport.connect (function () {
 		var client = new msgpack_rpc.Client (transport, "P.v1");
-		client.invoke('add', 5, 7, function(err, response) {
+		client.invoke('add', [5, 7], function(err, response) {
 		    responses_received ++;
 		    test.equal(5 + 7, response);
 		    trigger ();
