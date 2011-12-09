@@ -1,6 +1,6 @@
 {
   "name" : "fast-msgpack-rpc",
-  "version" : "0.0.5",
+  "version" : "0.0.6",
   "description" : "A non-compatible variant of the Msgpack-RPC protocol specification for node.js",
   "homepage" : "https://github.com/maxtaco/node-fast-msgpack-rpc",
   "main" : "./lib/msgpack-rpc",
@@ -14,7 +14,5 @@
   "scripts" : {
       	"test":	"node test/all-tests.js"
   },
-  "dependencies" : {
-      "msgpack2" : ">= 0.1.4"
-   }
+  "dependencies" : { }
 }
