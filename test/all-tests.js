@@ -1,5 +1,5 @@
 #!/usr/bin/env node
 
 if (module === require.main) {
-    require('async_testing').run ("test/", process.ARGV);
+    require('async_testing').run ("test/", process.argv);
 }
