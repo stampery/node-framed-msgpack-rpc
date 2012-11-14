@@ -17,7 +17,7 @@ module.exports = {
 		test.ok (notification_received);
 		test.equal (responses_received, 2);
 		test.finish ();
-		client.stream.end();
+		client.transport.close();
 		server.close();
 	    }
 	}
