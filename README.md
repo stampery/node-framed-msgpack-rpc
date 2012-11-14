@@ -1,7 +1,7 @@
-maxtaco/node-msgpack-rpc
+maxtaco/node-fast-msgpack-rpc
 ========================
 
-node-msgpack-rpc is an implementation of the
+node-fast-msgpack-rpc is an implementation of the
 [Msgpack-RPC](http://redmine.msgpack.org/projects/msgpack/wiki/RPCDesign)
 protocol specification for node.js.  Msgpack-RPC is built ontop of the
 very fast [MessagePack](http://msgpack.org) serialization format. This
@@ -46,13 +46,18 @@ var c = rpc.createClient('127.0.0.1', 8000,
     }, "myprog.v1");
 ```
 
-Or, in beautiful [IcedCoffeeScript](https://github.com/maxtaco/coffee-script):
+Or, equivalently, in beautiful 
+[IcedCoffeeScript](https://github.com/maxtaco/coffee-script):
 
 ```coffee
-await (c = rpc.createClient '127.0.0.1', 8000, defer(), "myprog.v1")
-await c.invoke 'add', { a : 5, b : 4}, defer err, response
+await (c = rpc.createClient '127.0.0.1', 8000, defer(ok), "myprog.v1")
+await c.invoke 'add', { a : 5, b : 4 }, defer err, response
 c.close()
 ```
+
+Advanced Usage
+--------------
+(documentation to come)
 
 Installation
 ------------
@@ -64,23 +69,7 @@ To install node-msgpack-rpc with npm:
     npm install -g msgpack2
 
 
-RPC Stream API
---------------
+Debug and Tracing Hooks
+-----------------------
 
-Clients and the streams passed to servers for incoming connections are both instances of MsgpackRPCStream.
-
-Methods
-
-    c.createClient(port, [hostname], [ready_cb]);
-    c.invoke(method, [param1, param2, ...], cb);
-    c.notify(method, [param1, param2, ...]);
-    c.setTimeout(milliseconds);  // Setting this will cause requests to fail with err "timeout" if they don't recieve a response for the specified period
-    c.close(); // Close the socket for this client
-    c.stream // underlying net.Stream object
-
-Events
-
-    'ready' // emitted when we've connected to the server
-    'request' // recieved request
-    'notify' // recieved notification
-
+(documentation to come)
