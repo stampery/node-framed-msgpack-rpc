@@ -52,7 +52,9 @@ module.exports = {
 	var port = 8030;
 	
 	server.listen(port, function() {
+
 	    client = msgpack_rpc.createClient("127.0.0.1", port, function () {
+
 		client.invoke('add', [5, 7], function(err, response) {
 		    responses_received ++;
 		    test.equal(5 + 7, response);

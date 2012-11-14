@@ -18,61 +18,50 @@ API.
 Simple Usage
 ------------
 
-The easiest way to create a server is with a handler object.  All incoming calls will be invoked on the handler object:
+If you don't care too much about keeping custom per-connection state, it's
+easy to make a simple RPC server:
 
-
-```javascript    
-    var handler = {
-      'add' : function(a, b, response) {
-         response.result( a + b );
-       }
-    }
-
-    var rpc = require('fast-msgpack-rpc');
-    rpc.createServer();
-    rpc.setHandler(handler);
-    rpc.listen(8000);
+```javascript
+var rpc = require('fast-msgpack-rpc');
+var srv = rpc.createServer({
+   "myprog.v1" : {
+      add : function(arg, response) {
+         response.result(arg.a + arg.b);
+      }
+   }
+});
+srv.listen(8000);
 ```
 
 a corresponding client might look like:
 
-    var c = rpc.createClient(8000, '127.0.0.1', function() {
-      c.invoke('add', 5, 4, function(err, response) {
-        assert.equal(9, response);
-        c.close();
-      }
-    });
+```javascript
+var c = rpc.createClient('127.0.0.1', 8000, 
+    function() {
+        c.invoke('add', { a : 5, b : 4}, 
+            function(err, response) {
+                assert.equal(9, response);
+                c.close();
+            });
+    }, "myprog.v1");
+```
 
+Or, in beautiful [IcedCoffeeScript](https://github.com/maxtaco/coffee-script):
 
-Without a handler
------------------
-
-    rpc.createServer(function(rpc_stream) {
-      rpc_stream.on('request', function(method, params, response) {
-        if(method == 'add') {
-          response.result( params[0] + params[1] );
-        } else {
-          response.error("unknown method!");
-        }
-      }
-
-      rpc_stream.on('notify', function(method, params) {
-        console.log("recieved notification: " + method);
-      });
-    });
-    rpc.listen(8000);
-
+```coffee
+await (c = rpc.createClient '127.0.0.1', 8000, defer(), "myprog.v1")
+await c.invoke 'add', { a : 5, b : 4}, defer err, response
+c.close()
+```
 
 Installation
 ------------
 
-First you will need to install the [node-msgpack](http://github.com/pgriess/node-msgpack) add-on
+First you will need to install the [msgpack2](http://github.com/JulesAU/node-msgpack) add-on
 
 To install node-msgpack-rpc with npm:
 
-    git clone http://github.com/bpot/node-msgpack-rpc/
-    cd node-msgpack-rpc
-    npm link .
+    npm install -g msgpack2
 
 
 RPC Stream API
