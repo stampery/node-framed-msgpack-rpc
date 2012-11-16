@@ -131,11 +131,15 @@ exports.make_hook = (flgs, fn) ->
 
 exports.Message = class Message
 
-  constructor : (@msg) ->
+  constructor : (@msg, @hook = null) ->
 
   response : (error, result) ->
     @msg.error = error
     @msg.result = result
-    @msg.dir = dir.INCOMING
+    @msg.dir = if dir.OUTGOING then dir.INCOMING else dir.OUTGOING
 
   msg : -> @msg
+
+  call : -> @hook @msg()
+
+  set : (k,v) -> @msg[k] = v
