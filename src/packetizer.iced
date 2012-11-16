@@ -20,14 +20,14 @@ class Packetizer
   (like a TcpTransport below).  Should be inherited by such a class.
   The subclasses should implement:
   
-     @_stream_write(msg,enc) - write this msg to the stream with the
+     @_write(msg,enc) - write this msg to the stream with the
        given encoding.
       
-     @_stream_error(err) - report an error with the stream
+     @_fatal(err) - report an error with the stream
     
-     @_stream_emit(msg) - emit a packetized incoming message
+     @_dispatch(msg) - emit a packetized incoming message
 
-  The subclass should call @got_data(m) whenever it has data to stuff
+  The subclass should call @packetize_data(m) whenever it has data to stuff
   into the packetizer's input path, and call @send(m) whenever it wants
   to stuff data into the packterizer's output path.
    
@@ -48,7 +48,7 @@ class Packetizer
     super
     @_ring = new Ring()
     @_state = @FRAME
-    @_next_packet_len = 0
+    @_next_msg_len = 0
 
   ##-----------------------------------------
   
@@ -59,12 +59,14 @@ class Packetizer
     rc = 0
     enc = 'binary'
     for b in bufs
-      @_stream_write b.toString(enc), enc
+      @_raw_write b.toString(enc), enc
     return true
 
   ##-----------------------------------------
 
   _get_frame : () ->
+    # We need at least one byte to get started
+    return @WAIT unless @_ring.len() > 0
 
     # First get the frame's framing byte! This will tell us
     # how many more bytes we need to grab.  This is a bit of
@@ -75,7 +77,7 @@ class Packetizer
 
     frame_len = msgpack_frame_len f0
     unless frame_len
-      @_stream_error "Bad frame header received"
+      @_fatal "Bad frame header received"
       return @ERR
 
     # We now know how many bytes to suck in just to get the frame
@@ -92,46 +94,41 @@ class Packetizer
         throw new Error "Negative len #{len} should not have happened" if r < 0
         
         @_ring.consume frame_len
-        @_next_packet_len = r
+        @_next_msg_len = r
         @_state = @DATA
         @OK
       when 'undefined'
         @WAIT
       else
-        @_stream_error "bad frame; got type=#{typ}, which is wrong"
+        @_fatal "bad frame; got type=#{typ}, which is wrong"
         @ERR
 
     return res
        
   ##-----------------------------------------
 
-  _get_data: () ->
-    l = @_next_packet_len
-    b = @_ring.grab l
-
-    if not b?
-      ret = @WAIT
+  _get_msg: () ->
+    l = @_next_msg_len
+    
+    ret = if l < @_ring.len() or not (b = @_ring.grab l)?
+      @WAIT
+    else if not (msg = unpack b)?
+      @_fatal "bad encoding found in data/payload; len=#{l}"
+      @ERR
     else
-      msg = unpack b
-      if not msg
-        ret = @ERR
-        @_stream_error "bad encoding found in data/payload; len=#{l}"
-      else
-        @_ring.consume l
-        @_stream_msg msg
-        ret = @OK
+      @_ring.consume l
+      @_state = @FRAME
+      # Call down one level in the class hierarchy to the dispatcher
+      @_dispatch msg
+      @OK
     return ret
   
   ##-----------------------------------------
   
-  got_packet : (m) ->
-
+  packetize_data : (m) ->
     @_ring.buffer m
-
     go = @OK
-
     while go is @OK
-      if @_state is @FRAME
-        go = if @_ring.len() > 0 then @_get_frame() else @WAIT
-      else if @_state is @DATA
-        go = if @_next_packet_len <= @_ring.len() then @_get_data() else @WAIT
+      go = if @_state is @FRAME then @_get_frame() else @_get_msg()
+     
+##=======================================================================

@@ -1,15 +1,16 @@
 
 net = require 'net'
 {Lock} = require './lock'
-{Packetizer} = require './packetizer'
+{Dispatch} = require './dispatch'
 
 ##=======================================================================
 
-exports.TcpTransport = class TcpTransport extends Packetizer
+exports.TcpTransport = class TcpTransport extends Dispatch
 
   ##-----------------------------------------
 
   constructor : (@_port, @_host = null, @_opts = {}) ->
+    super
     @_connected = false
     @_host = "127.0.0.1" if not @_host or @_host is "-"
     @_tcp_stream = null
@@ -20,21 +21,17 @@ exports.TcpTransport = class TcpTransport extends Packetizer
     @_tcp_opts.port = @_port
     @_lock = new Lock()
     @_write_closed_warn = false
+    @_generation += 1
 
   ##-----------------------------------------
 
-  _log : (err) ->
+  remote : () -> @_remote_str
+   
+  ##-----------------------------------------
+
+  _warn : (err) ->
     fn = @_opts.log_hook or console.log
     fn "TcpTransport(#{@_remote_str}): #{err}"
-
-  ##-----------------------------------------
-
-  _write : (msg, encoding) ->
-    if @_tcp_stream
-      @_tcp_stream.write msg, encoding
-    else if not @_write_closed_warn
-      @_write_closed_warn = true
-      @_log "attempt to write to closed connection"
    
   ##-----------------------------------------
 
@@ -66,16 +63,38 @@ exports.TcpTransport = class TcpTransport extends Packetizer
     
     switch rv_id
       when CON then ok = true
-      when ERR then @_log err
-      when CLS then @_log "connection closed during open"
+      when ERR then @_warn err
+      when CLS then @_warn "connection closed during open"
 
     if ok
-      # Now remap the error handlers  
+      # Now remap the event emitters
       x.on 'error', (err) => @handle_err err
       x.on 'close', ()    => @handle_close()
+      x.on 'data',  (msg) => @packetize_data msg
+      
       @_tcp_stream = x
+      @_write_closed_warn = false
+      @_generation++
       
     cb ok
+
+  ##-----------------------------------------
+  
+  _fatal : (err) ->
+    @_warn err
+    if @_tcp_stream
+      x = @_tcp_stream
+      @_tcp_stream
+      x.end()
  
   ##-----------------------------------------
-
+  # To fulfill the packetizer contract, the following 1
+  
+  _raw_write : (msg, encoding) ->
+    if @_tcp_stream
+      @_tcp_stream.write msg, encoding
+    else if not @_write_closed_warn
+      @_write_closed_warn = true
+      @_warn "attempt to write to closed connection"
+ 
+  ##-----------------------------------------
