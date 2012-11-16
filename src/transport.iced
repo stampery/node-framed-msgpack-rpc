@@ -1,10 +1,11 @@
 
 net = require 'net'
 {Lock} = require './lock'
+{Packetizer} = require './packetizer'
 
 ##=======================================================================
 
-exports.TcpTransport = class TcpTransport
+exports.TcpTransport = class TcpTransport extends Packetizer
 
   ##-----------------------------------------
 
@@ -18,6 +19,7 @@ exports.TcpTransport = class TcpTransport
     @_tcp_opts.host = @_host
     @_tcp_opts.port = @_port
     @_lock = new Lock()
+    @_write_closed_warn = false
 
   ##-----------------------------------------
 
@@ -25,6 +27,15 @@ exports.TcpTransport = class TcpTransport
     fn = @_opts.log_hook or console.log
     fn "TcpTransport(#{@_remote_str}): #{err}"
 
+  ##-----------------------------------------
+
+  _write : (msg, encoding) ->
+    if @_tcp_stream
+      @_tcp_stream.write msg, encoding
+    else if not @_write_closed_warn
+      @_write_closed_warn = true
+      @_log "attempt to write to closed connection"
+   
   ##-----------------------------------------
 
   connect : (cb) ->
