@@ -12,8 +12,8 @@ task 'build', 'build the whole jam', (cb) ->
 
 runIced = (args, cb) ->
   proc =  spawn 'iced', args
-  console.log args
   proc.stderr.on 'data', (buffer) -> console.log buffer.toString()
+  proc.stdout.on 'data', (buffer) -> console.log buffer.toString().trim()
   await proc.on 'exit', defer status 
   process.exit(1) if status != 0
   cb() if typeof cb is 'function'
@@ -22,4 +22,8 @@ clearLibJs = (cb) ->
   files = fs.readdirSync 'lib'
   files = ("lib/#{file}" for file in files when file.match(/\.js$/))
   fs.unlinkSync f for f in files
+  cb()
+
+task 'test', "run the test suite", (cb) ->
+  await runIced [ "test/all.iced"], defer()
   cb()

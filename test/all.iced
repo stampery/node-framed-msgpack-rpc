@@ -65,9 +65,9 @@ class Runner
           @err "In #{f}/#{k}: #{err}"
         else if ok
           @_successes++
-          console.log "#{CHECK} #{f}/#{k}".green
+          console.log "#{CHECK} #{f}: #{k}".green
         else
-          console.log "#{FUUUU} #{f}/#{k}".bold.red
+          console.log "#{FUUUU} #{f}: #{k}".bold.red
     cb()
 
   ##-----------------------------------------
