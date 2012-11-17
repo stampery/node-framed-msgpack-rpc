@@ -13,7 +13,7 @@ exports.TcpTransport = class TcpTransport extends Dispatch
                    @parent, @do_tcp_delay}) ->
     super
     
-    @host = "127.0.0.1" if not @host or @host is "-"
+    @host = "localhost" if not @host or @host is "-"
     @tcp_opts = {} unless @tcp_opts
     @tcp_opts.host = @host
     @tcp_opts.port = @port
@@ -47,7 +47,8 @@ exports.TcpTransport = class TcpTransport extends Dispatch
   ##-----------------------------------------
   
   _connect_critical_section : (cb) ->
-    x = new net.createConnection @tcp_opts
+    console.log "Connecting with opts #{JSON.stringify @tcp_opts}"
+    x = net.connect @tcp_opts
     x.setNoDelay true unless @do_tcp_delay
 
     # Some local switch codes....

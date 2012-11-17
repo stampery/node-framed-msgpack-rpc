@@ -12,7 +12,12 @@ exports.init = (cb) ->
         bar : (arg, res) -> res.reply { y : arg.j * arg.k }
         
   await s.listen defer err
+  if not err
+    console.log "Listening in port #{PORT}..."
   cb err
+  # Keep this guy in scope for a while...
+  await setTimeout defer(), 10000
+
 
 exports.test1 = (cb) ->
   x = new transport.TcpTransport { port : PORT, host : "-" }
