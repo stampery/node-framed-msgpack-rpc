@@ -10,7 +10,7 @@ exports.TcpTransport = class TcpTransport extends Dispatch
   ##-----------------------------------------
 
   constructor : ({ @port, @host, @tcp_opts, @tcp_stream, @log_hook,
-                   @parent}) ->
+                   @parent, @do_tcp_delay}) ->
     super
     
     @host = "127.0.0.1" if not @host or @host is "-"
@@ -30,7 +30,7 @@ exports.TcpTransport = class TcpTransport extends Dispatch
   ##-----------------------------------------
 
   _warn : (err) ->
-    fn = @_opts.log_hook or console.log
+    fn = @log_hook or console.log
     fn "TcpTransport(#{@_remote_str}): #{err}"
    
   ##-----------------------------------------
@@ -47,8 +47,8 @@ exports.TcpTransport = class TcpTransport extends Dispatch
   ##-----------------------------------------
   
   _connect_critical_section : (cb) ->
-    x = new net.createConnection @tcp_opts, defer()
-    x.setNoDelay true unless @_opts.delay
+    x = new net.createConnection @tcp_opts
+    x.setNoDelay true unless @do_tcp_delay
 
     # Some local switch codes....
     [ CON, ERR, CLS ] = [0..2]

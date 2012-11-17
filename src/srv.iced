@@ -64,7 +64,7 @@ exports.ContextualServer = class ContextualServer extends TcpListener
     super d
     @programs = {}
     @classes = d.classes
-    for n,klass in @classses
+    for n,klass of @classses
       @programs[n] = klass.collect_hooks()
 
   #-----------------------------------------

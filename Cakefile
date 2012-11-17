@@ -16,7 +16,7 @@ runIced = (args, cb) ->
   proc.stdout.on 'data', (buffer) -> console.log buffer.toString().trim()
   await proc.on 'exit', defer status 
   process.exit(1) if status != 0
-  cb() if typeof cb is 'function'
+  cb()
 
 clearLibJs = (cb) ->
   files = fs.readdirSync 'lib'
@@ -26,4 +26,4 @@ clearLibJs = (cb) ->
 
 task 'test', "run the test suite", (cb) ->
   await runIced [ "test/all.iced"], defer()
-  cb()
+  cb() if typeof cb is 'function'

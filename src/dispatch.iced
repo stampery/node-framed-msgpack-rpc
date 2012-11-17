@@ -1,7 +1,6 @@
 
-
 {Packetizer} = require './packetizer'
-debug = require './debug'
+dbg = require './debug'
 
 ##=======================================================================
 
@@ -93,9 +92,9 @@ exports.Dispatch = class Dispatch extends Packetizer
     if debug_hook
       debug_msg = new debug.Message {
         method, seqid, arg,
-        dir : debug.constants.dir.OUTGOING,
+        dir : dbg.constants.dir.OUTGOING,
         remote : @remote()
-        type : debug.constants.type.CLIENT_CALL
+        type : dbg.constants.type.CLIENT_CALL
       }
       debug_hook debug_msg.msg()
         
@@ -120,11 +119,11 @@ exports.Dispatch = class Dispatch extends Packetizer
     msg = [ @NOTIFY, method, arg ]
 
     if debug_hook
-      debug_msg = new debug.Message {
+      debug_msg = new dbg.Message {
         method, arg,
-        dir : debug.constants.dir.OUTGOING,
+        dir : dbg.constants.dir.OUTGOING,
         remote : @remote()
-        type : debug.constants.type.CALL_NOTIFY
+        type : dbg.constants.type.CALL_NOTIFY
       }
       debug_hook debug_msg.msg()
         
@@ -140,9 +139,9 @@ exports.Dispatch = class Dispatch extends Packetizer
       debug_msg = new debug.Message {
         method
         arg : param
-        dir : debug.constants.dir.INCOMING
+        dir : dbg.constants.dir.INCOMING
         remote : @remote()
-        type : debug.constants.type.SERVER
+        type : dbg.constants.type.SERVER
         error : if pair then null else "unknown method"
       }, debug_hook
 

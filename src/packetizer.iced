@@ -14,7 +14,7 @@ msgpack_frame_len = (buf) ->
 
 ##=======================================================================
 
-class Packetizer
+exports.Packetizer = class Packetizer
   """
   A packetizer that is used to read and write to an underlying stream
   (like a TcpTransport below).  Should be inherited by such a class.
@@ -45,7 +45,6 @@ class Packetizer
   ##-----------------------------------------
   
   constructor : ->
-    super
     @_ring = new Ring()
     @_state = @FRAME
     @_next_msg_len = 0

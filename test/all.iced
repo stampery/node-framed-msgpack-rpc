@@ -77,7 +77,7 @@ class Runner
       dat = require path.join @_dir, f
       await @run_code f, dat, defer()
     catch e
-      @err "In reading #{f}: #{e}"
+      @err "In reading #{f}: #{e}\n#{e.stack}"
     cb()
 
   ##-----------------------------------------

@@ -3,7 +3,7 @@
 
 ##=======================================================================
 
-class Ring
+exports.Ring = class Ring
   """
   A Ring of buffers. Every so often you'll have to compress buffers into
   smaller buffers, but try to limit that as much as possible....

@@ -46,7 +46,7 @@ exports.TcpListener = class TcpListener
     @_make_server()
     
     [ OK, ERR ] = [0..1]
-    rv = new iced.Rendzvous
+    rv = new iced.Rendezvous
     x = @_tcp_server
     x.listen @port, @host
     
