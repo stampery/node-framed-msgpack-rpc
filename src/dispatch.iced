@@ -153,12 +153,14 @@ exports.Dispatch = class Dispatch extends Packetizer
     else if response? then response.error new Error "unknown method #{method}"
       
   ##-----------------------------------------
-  # 
+
+  # please override me!
+  get_handler_this : (m) -> @
 
   # please override me!
   get_handler_pair : (m) ->
     h = @_handlers[m]
-    if h then [ this, h ]
+    if h then [ @get_handler_this(), h ]
     else null
 
   add_handler : (method, hook, program = null) ->
@@ -166,7 +168,7 @@ exports.Dispatch = class Dispatch extends Packetizer
     @_handlers[method] = hook
 
   add_program : (program, hooks) ->
-    for method,hook of hooks:
+    for method,hook of hooks
       @add_handler method, hook, program
 
   add_programs : (programs) ->

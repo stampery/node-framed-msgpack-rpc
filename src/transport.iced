@@ -9,16 +9,16 @@ exports.TcpTransport = class TcpTransport extends Dispatch
 
   ##-----------------------------------------
 
-  constructor : (@_port, @_host = null, @_opts = {}) ->
+  constructor : ({ @port, @host, @tcp_opts, @tcp_stream, @log_hook,
+                   @parent}) ->
     super
-    @_connected = false
-    @_host = "127.0.0.1" if not @_host or @_host is "-"
-    @_tcp_stream = null
-    @_remote_str = [ @_host,  @_port].join ":"
     
-    @_tcp_opts = @_opts.tcp_opts or {}
-    @_tcp_opts.host = @_host
-    @_tcp_opts.port = @_port
+    @host = "127.0.0.1" if not @host or @host is "-"
+    @tcp_opts = {} unless @tcp_opts
+    @tcp_opts.host = @host
+    @tcp_opts.port = @port
+    
+    @_remote_str = [ @host,  @port].join ":"
     @_lock = new Lock()
     @_write_closed_warn = false
     @_generation = 1
@@ -37,7 +37,7 @@ exports.TcpTransport = class TcpTransport extends Dispatch
 
   connect : (cb) ->
     await @_lock.acquire defer()
-    if not @_tcp_stream?
+    if not @tcp_stream?
       await @_connect_critical_section defer res
     else
       res = true
@@ -47,10 +47,11 @@ exports.TcpTransport = class TcpTransport extends Dispatch
   ##-----------------------------------------
   
   _connect_critical_section : (cb) ->
-    x = new net.createConnection @_tcp_opts, defer()
+    x = new net.createConnection @tcp_opts, defer()
     x.setNoDelay true unless @_opts.delay
-      
-    events = { CON : 0, ERR : 1, CLS : 2 }
+
+    # Some local switch codes....
+    [ CON, ERR, CLS ] = [0..2]
 
     # We'll take any one of these three events...
     rv = new iced.Rendezvous
@@ -68,11 +69,11 @@ exports.TcpTransport = class TcpTransport extends Dispatch
 
     if ok
       # Now remap the event emitters
-      x.on 'error', (err) => @handle_err err
+      x.on 'error', (err) => @handle_error err
       x.on 'close', ()    => @handle_close()
       x.on 'data',  (msg) => @packetize_data msg
       
-      @_tcp_stream = x
+      @tcp_stream = x
       @_write_closed_warn = false
       @_generation++
       
@@ -82,17 +83,17 @@ exports.TcpTransport = class TcpTransport extends Dispatch
   
   _fatal : (err) ->
     @_warn err
-    if @_tcp_stream
-      x = @_tcp_stream
-      @_tcp_stream
+    if @tcp_stream
+      x = @tcp_stream
+      @tcp_stream = null
       x.end()
  
   ##-----------------------------------------
   # To fulfill the packetizer contract, the following 1
   
   _raw_write : (msg, encoding) ->
-    if @_tcp_stream
-      @_tcp_stream.write msg, encoding
+    if @tcp_stream
+      @tcp_stream.write msg, encoding
     else if not @_write_closed_warn
       @_write_closed_warn = true
       @_warn "attempt to write to closed connection"
