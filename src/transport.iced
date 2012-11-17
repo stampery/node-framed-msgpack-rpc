@@ -46,6 +46,19 @@ exports.TcpTransport = class TcpTransport extends Dispatch
 
   ##-----------------------------------------
   
+  activate_stream : () ->
+    x = @tcp_stream
+    x.on 'error', (err) => @handle_error err
+    x.on 'close', ()    => @handle_close()
+    x.on 'data',  (msg) =>
+      console.log "DATA #{msg}"
+      @packetize_data msg
+
+    @_write_closed_warn = false
+    @_generation++
+
+  ##-----------------------------------------
+  
   _connect_critical_section : (cb) ->
     console.log "Connecting with opts #{JSON.stringify @tcp_opts}"
     x = net.connect @tcp_opts
@@ -69,15 +82,10 @@ exports.TcpTransport = class TcpTransport extends Dispatch
       when CLS then @_warn "connection closed during open"
 
     if ok
-      # Now remap the event emitters
-      x.on 'error', (err) => @handle_error err
-      x.on 'close', ()    => @handle_close()
-      x.on 'data',  (msg) => @packetize_data msg
-      
       @tcp_stream = x
-      @_write_closed_warn = false
-      @_generation++
-      
+      # Now remap the event emitters
+      @activate_stream()
+
     cb ok
 
   ##-----------------------------------------

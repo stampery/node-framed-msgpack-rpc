@@ -5,11 +5,11 @@
 ##=======================================================================
 
 msgpack_frame_len = (buf) ->
-  bytes = buf[0]
-  if buf < 0x80 then 1
-  else if buf is 0xcc then 2
-  else if buf is 0xcd then 3 
-  else if buf is 0xce then 5
+  b = buf[0]
+  if b < 0x80 then 1
+  else if b is 0xcc then 2
+  else if b is 0xcd then 3 
+  else if b is 0xce then 5
   else 0
 
 ##=======================================================================
@@ -57,6 +57,7 @@ exports.Packetizer = class Packetizer
     bufs = [ b1, b2 ]
     rc = 0
     enc = 'binary'
+    console.log "send #{JSON.stringify msg}"
     for b in bufs
       @_raw_write b.toString(enc), enc
     return true
@@ -118,6 +119,7 @@ exports.Packetizer = class Packetizer
       @_ring.consume l
       @_state = @FRAME
       # Call down one level in the class hierarchy to the dispatcher
+      console.log "Dispatching! #{JSON.stringify msg}"
       @_dispatch msg
       @OK
     return ret
@@ -125,6 +127,7 @@ exports.Packetizer = class Packetizer
   ##-----------------------------------------
   
   packetize_data : (m) ->
+    console.log "Packetizing on #{m}"
     @_ring.buffer m
     go = @OK
     while go is @OK

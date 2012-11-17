@@ -49,7 +49,7 @@ exports.Ring = class Ring
     # this first buffer that we'll be keeping (the returned buffer)
     first_pos = num_bufs - 1
     @_bufs[first_pos] = ret
-    @_bufs = @_bufs[first_post...]
+    @_bufs = @_bufs[first_pos...]
 
     return ret
     
@@ -61,7 +61,7 @@ exports.Ring = class Ring
     if b.length == n
       @_bufs = @_bufs[1...]
     else
-      b = b[n...]
+      @_bufs[0] = b[n...]
     @_len -= n
         
 

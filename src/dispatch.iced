@@ -18,7 +18,7 @@ exports.Reponse = class Reponse
     if @debug
       @debug.response err, null
       @debug.call()
-    @dispatch.error err, null
+    @dispatch.response err, null
 
 ##=======================================================================
 
@@ -34,6 +34,7 @@ exports.Dispatch = class Dispatch extends Packetizer
     @_invocations = {}
     @_handlers = {}
     @_seqid = 1
+    @_debug_hook = null
     super
 
   ##-----------------------------------------
@@ -77,55 +78,56 @@ exports.Dispatch = class Dispatch extends Packetizer
 
   ##-----------------------------------------
   
-  @make_method : (prog, meth) ->
+  make_method : (prog, meth) ->
     if prog then [ prog, meth].join "." else meth
  
   ##-----------------------------------------
 
-  invoke : ({program, method, args, debug_hook}, cb) ->
+  invoke : ({program, method, args}, cb) ->
 
     method = @make_method program, method
     
     seqid = @_next_seqid()
-    msg = [ @REQUEST, seqid, method, arg ]
+    msg = [ @REQUEST, seqid, method, args ]
 
-    if debug_hook
+    if @_debug_hook
       debug_msg = new debug.Message {
         method, seqid, arg,
         dir : dbg.constants.dir.OUTGOING,
         remote : @remote()
         type : dbg.constants.type.CLIENT_CALL
       }
-      debug_hook debug_msg.msg()
+      @_debug_hook debug_msg.msg()
         
     
     # Down to the packetizer, which will jump back up to the Transport!
+    console.log "Send it!"
     @send msg
 
     await (@_invocations[seqid] = defer(error,result) )
 
-    if debug_hook
+    if @_debug_hook
       debug_msg.response error, result
-      debug_hook debug_msg.msg()
+      @_debug_hook debug_msg.msg()
         
     cb error, result
 
   ##-----------------------------------------
 
-  notify : ({program, method, args, debug_hook}) ->
+  notify : ({program, method, args}) ->
     
     method = @make_method program, method
     
     msg = [ @NOTIFY, method, arg ]
 
-    if debug_hook
+    if @_debug_hook
       debug_msg = new dbg.Message {
         method, arg,
         dir : dbg.constants.dir.OUTGOING,
         remote : @remote()
         type : dbg.constants.type.CALL_NOTIFY
       }
-      debug_hook debug_msg.msg()
+      @_debug_hook debug_msg.msg()
         
     @send msg
 
@@ -135,7 +137,7 @@ exports.Dispatch = class Dispatch extends Packetizer
 
     pair = @get_handler_pair method
 
-    if debug_hook
+    if @_debug_hook
       debug_msg = new debug.Message {
         method
         arg : param
@@ -143,7 +145,7 @@ exports.Dispatch = class Dispatch extends Packetizer
         remote : @remote()
         type : dbg.constants.type.SERVER
         error : if pair then null else "unknown method"
-      }, debug_hook
+      }, @_debug_hook
 
       response.debug = debug_msg if response
       debug_msg.call()
@@ -172,7 +174,7 @@ exports.Dispatch = class Dispatch extends Packetizer
 
   add_programs : (programs) ->
     for program, hooks of programs
-      @add_program program, hook
+      @add_program program, hooks
 
   #
   ##-----------------------------------------
