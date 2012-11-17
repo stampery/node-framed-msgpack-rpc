@@ -21,7 +21,7 @@ exports.TcpTransport = class TcpTransport extends Dispatch
     @_tcp_opts.port = @_port
     @_lock = new Lock()
     @_write_closed_warn = false
-    @_generation += 1
+    @_generation = 1
 
   ##-----------------------------------------
 
