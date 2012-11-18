@@ -8,8 +8,10 @@ exports.init = (cb) ->
     port : PORT
     programs :
       "P.1" :
-        foo : (arg, res) -> res.reply { y : arg.i + 2 }
-        bar : (arg, res) -> res.reply { y : arg.j * arg.k }
+        foo : (arg, res) ->
+          console.log "Handing a call to foo w/ arg=#{JSON.stringify arg}"
+          res.result { y : arg.i + 2 }
+        bar : (arg, res) -> res.result { y : arg.j * arg.k }
         
   await s.listen defer err
   if not err
@@ -19,7 +21,7 @@ exports.init = (cb) ->
   await setTimeout defer(), 10000
 
 
-exports.test1 = (cb) ->
+exports.test1 = (T, cb) ->
   x = new transport.TcpTransport { port : PORT, host : "-" }
   await x.connect defer ok
   if not ok
@@ -28,11 +30,8 @@ exports.test1 = (cb) ->
     console.log "Connected!"
     ok = false
     c = new cli.Client x, "P.1"
-    await c.invoke "foo", { i : 4 }, defer err, res
-    if err
-      console.log "Error in call: #{err}"
-    else if res.y isnt 6
-      console.log "Res was wrong: #{JSON.stringify res}"
-    else
-      ok = true
+
+    await T.test_rpc c, "foo", { i : 4 } , { y : 6 }, defer()
+    await T.test_rpc c, "bar", { j : 2, k : 7 }, { y : 14}, defer()
+    
   cb ok

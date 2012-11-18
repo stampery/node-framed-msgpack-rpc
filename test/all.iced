@@ -2,9 +2,37 @@
 fs = require 'fs'
 path = require 'path'
 colors = require 'colors'
+deep_equal = require 'deep-equal'
 
 CHECK = "\u2714"
 FUUUU = "\u2716"
+
+##-----------------------------------------------------------------------
+
+class Tester
+  constructor : ->
+    @_ok = true
+
+  equal : (a,b,what) ->
+    if not deep_equal a, b
+      console.log "In #{what}: #{JSON.stringify a} != #{JSON.stringify b}".red
+      @_ok = false
+
+  test_rpc : (cli, method, arg, expected, cb) ->
+    full = [ cli.program , method ].join "."
+    await cli.invoke method, arg, defer error, result
+    @check_rpc full, error, result, expected
+    cb()
+
+  error : (e) ->
+    console.log e.red
+    @_ok = false
+
+  check_rpc: (name, error, result, expected) ->
+    if error then @error "In #{name}: #{error}"
+    else @equal result, expected, "#{name} RPC result"
+
+  is_ok : () -> @_ok
 
 ##-----------------------------------------------------------------------
 
@@ -60,10 +88,11 @@ class Runner
     else
       for k,v of code
         @_tests++
-        await v defer ok, err
+        T = new Tester
+        await v T, defer err
         if err
           @err "In #{f}/#{k}: #{err}"
-        else if ok
+        else if T.is_ok()
           @_successes++
           console.log "#{CHECK} #{f}: #{k}".green
         else

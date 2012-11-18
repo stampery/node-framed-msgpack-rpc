@@ -12,13 +12,13 @@ exports.Reponse = class Reponse
     if @debug
       @debug.response null, res
       @debug.call()
-    @dispatch.response null, res
+    @dispatch.respond @seqid, null, res
 
   error : (err) ->
     if @debug
       @debug.response err, null
       @debug.call()
-    @dispatch.response err, null
+    @dispatch.respond @seqid, err, null
 
 ##=======================================================================
 
@@ -79,8 +79,14 @@ exports.Dispatch = class Dispatch extends Packetizer
   ##-----------------------------------------
   
   make_method : (prog, meth) ->
-    if prog then [ prog, meth].join "." else meth
+    if prog then [ prog, meth ].join "." else meth
  
+  ##-----------------------------------------
+
+  respond : (seqid, error, result) ->
+    msg = [ @RESPONSE, seqid, error, result ]
+    @send msg
+   
   ##-----------------------------------------
 
   invoke : ({program, method, args}, cb) ->
@@ -134,6 +140,7 @@ exports.Dispatch = class Dispatch extends Packetizer
   ##-----------------------------------------
 
   _serve : ({method, param, response}) ->
+    console.log "call to _serve w/ method=#{method} and p=#{param}"
 
     pair = @get_handler_pair method
 
@@ -150,7 +157,7 @@ exports.Dispatch = class Dispatch extends Packetizer
       response.debug = debug_msg if response
       debug_msg.call()
 
-    if pair then handler.call self, param, response
+    if pair then pair[1].call pair[0], param, response
     else if response? then response.error new Error "unknown method #{method}"
       
   ##-----------------------------------------
@@ -165,7 +172,8 @@ exports.Dispatch = class Dispatch extends Packetizer
     else null
 
   add_handler : (method, hook, program = null) ->
-    method = @make_method program, hook
+    method = @make_method program, method
+    console.log "Add method! #{method}"
     @_handlers[method] = hook
 
   add_program : (program, hooks) ->
