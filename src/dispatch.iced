@@ -166,7 +166,7 @@ exports.Dispatch = class Dispatch extends Packetizer
   # please override me!
   get_handler_pair : (m) ->
     h = @_handlers[m]
-    if h then [ @get_handler_this(), h ]
+    if h then [ @get_handler_this(m), h ]
     else null
 
   add_handler : (method, hook, program = null) ->

@@ -29,7 +29,7 @@ class Tester
     @_ok = false
 
   check_rpc: (name, error, result, expected) ->
-    if error then @error "In #{name}: #{error}"
+    if error then @error "In #{name}: #{JSON.stringify error}"
     else @equal result, expected, "#{name} RPC result"
 
   is_ok : () -> @_ok

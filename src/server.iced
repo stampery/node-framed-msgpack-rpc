@@ -39,7 +39,7 @@ exports.Server = class Server extends TcpListener
 # Then they will be automatically rolled up into a program, handled by
 # this class.
 # 
-exports.Context = class Context
+exports.Handler = class Handler
   constructor : ({@transport, @server}) ->
 
   # Collect all methods that start with "h_"s.  These are handler
@@ -56,7 +56,7 @@ exports.Context = class Context
 
 exports.ContextualServer = class ContextualServer extends TcpListener
   """This exposes a slightly different object as `this` to RPC
-  handlers -- in this case, it a Context object that points to be both
+  handlers -- in this case, it a Handler object that points to be both
   the parent server, and also the child transport.  So both are accessible
   via 'has-a' rather than 'is-a' relationships."""
 
@@ -64,7 +64,7 @@ exports.ContextualServer = class ContextualServer extends TcpListener
     super d
     @programs = {}
     @classes = d.classes
-    for n,klass of @classses
+    for n,klass of @classes
       @programs[n] = klass.collect_hooks()
 
   #-----------------------------------------
