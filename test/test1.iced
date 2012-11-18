@@ -1,4 +1,4 @@
-{srv,transport,cli} = require '../src/main'
+{server,transport,client} = require '../src/main'
 
 PORT = 8881
 
@@ -6,7 +6,7 @@ s = null
 
 exports.init = (cb) ->
   
-  s = new srv.Server
+  s = new server.Server
     port : PORT
     programs :
       "P.1" :
@@ -26,7 +26,7 @@ test_A = (T, cb) ->
     console.log "Failed to connect in TcpTransport..."
   else
     ok = false
-    c = new cli.Client x, "P.1"
+    c = new client.Client x, "P.1"
     await T.test_rpc c, "foo", { i : 4 } , { y : 6 }, defer()
     await T.test_rpc c, "bar", { j : 2, k : 7 }, { y : 14}, defer()
     x.close()
