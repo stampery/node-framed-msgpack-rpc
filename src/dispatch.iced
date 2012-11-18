@@ -107,7 +107,6 @@ exports.Dispatch = class Dispatch extends Packetizer
         
     
     # Down to the packetizer, which will jump back up to the Transport!
-    console.log "Send it!"
     @send msg
 
     await (@_invocations[seqid] = defer(error,result) )
@@ -140,7 +139,6 @@ exports.Dispatch = class Dispatch extends Packetizer
   ##-----------------------------------------
 
   _serve : ({method, param, response}) ->
-    console.log "call to _serve w/ method=#{method} and p=#{param}"
 
     pair = @get_handler_pair method
 
@@ -173,7 +171,6 @@ exports.Dispatch = class Dispatch extends Packetizer
 
   add_handler : (method, hook, program = null) ->
     method = @make_method program, method
-    console.log "Add method! #{method}"
     @_handlers[method] = hook
 
   add_program : (program, hooks) ->

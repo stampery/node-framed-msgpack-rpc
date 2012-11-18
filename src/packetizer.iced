@@ -57,7 +57,6 @@ exports.Packetizer = class Packetizer
     bufs = [ b1, b2 ]
     rc = 0
     enc = 'binary'
-    console.log "send #{JSON.stringify msg}"
     for b in bufs
       @_raw_write b.toString(enc), enc
     return true
@@ -110,7 +109,7 @@ exports.Packetizer = class Packetizer
   _get_msg: () ->
     l = @_next_msg_len
     
-    ret = if l < @_ring.len() or not (b = @_ring.grab l)?
+    ret = if l > @_ring.len() or not (b = @_ring.grab l)?
       @WAIT
     else if not (msg = unpack b)?
       @_fatal "bad encoding found in data/payload; len=#{l}"
@@ -119,7 +118,6 @@ exports.Packetizer = class Packetizer
       @_ring.consume l
       @_state = @FRAME
       # Call down one level in the class hierarchy to the dispatcher
-      console.log "Dispatching! #{JSON.stringify msg}"
       @_dispatch msg
       @OK
     return ret
@@ -127,7 +125,6 @@ exports.Packetizer = class Packetizer
   ##-----------------------------------------
   
   packetize_data : (m) ->
-    console.log "Packetizing on #{m}"
     @_ring.buffer m
     go = @OK
     while go is @OK
