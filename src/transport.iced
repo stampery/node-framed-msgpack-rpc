@@ -46,6 +46,13 @@ exports.TcpTransport = class TcpTransport extends Dispatch
 
   ##-----------------------------------------
 
+  close : () ->
+    if @tcp_stream
+      @tcp_stream.end()
+      @tcp_stream = null
+   
+  ##-----------------------------------------
+
   handle_close : () ->
     # noop for now, maybe do something clever in subclasses
    

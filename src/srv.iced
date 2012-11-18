@@ -12,7 +12,7 @@ exports.Server = class Server extends TcpListener
   Note you can pass a TransportClass to use instead of the TcpTransport.
   It should be a subclass of TcpTransport.
   """
-
+  
   #-----------------------------------------
 
   constructor : (d) ->

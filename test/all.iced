@@ -46,6 +46,8 @@ class Runner
     @_tests = 0
     @_successes = 0
     @_rc = 0
+    @_n_files = 0
+    @_n_good_files = 0
 
   ##-----------------------------------------
   
@@ -83,9 +85,11 @@ class Runner
     destroy = code.destroy
     delete code["init"]
     delete code["destroy"]
+    @_n_files++
     if err
       @err "Failed to initialize file #{f}: #{err}"
     else
+      @_n_good_files++
       for k,v of code
         @_tests++
         T = new Tester
@@ -97,6 +101,7 @@ class Runner
           console.log "#{CHECK} #{f}: #{k}".green
         else
           console.log "#{FUUUU} #{f}: #{k}".bold.red
+    await destroy defer() if destroy
     cb()
 
   ##-----------------------------------------
@@ -121,10 +126,15 @@ class Runner
 
   report : () ->
     if @_rc < 0
-      console.log "FAILURE due to test configuration issues".bold.red
+      console.log "#{FUUUU} Failure due to test configuration issues".red
     @_rc = -1 unless @_tests is @_successes
     f = if @_rc is 0 then colors.green else colors.red
+    
     console.log f "Tests: #{@_successes}/#{@_tests} passed".bold
+    
+    if @_n_files isnt @_n_good_files
+      console.log (" -> Only #{@_n_good_files}/#{@_n_files}" + 
+         " files ran properly").red.bold
     return @_rc
     
   ##-----------------------------------------
