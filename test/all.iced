@@ -3,6 +3,7 @@ fs = require 'fs'
 path = require 'path'
 colors = require 'colors'
 deep_equal = require 'deep-equal'
+{Transport,Client} = require '../src/main'
 
 CHECK = "\u2714"
 FUUUU = "\u2716"
@@ -41,6 +42,16 @@ class Tester
     else @equal result, expected, "#{name} RPC result"
 
   is_ok : () -> @_ok
+
+  connect : (port, prog, cb) ->
+    x = new Transport { port, host : "-" }
+    await x.connect defer ok
+    if not ok
+      @error "Failed to connect in TcpTransport..."
+      x = null
+    else
+      c = new Client x, prog
+    cb x, c
 
 ##-----------------------------------------------------------------------
 
