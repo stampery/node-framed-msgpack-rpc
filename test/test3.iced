@@ -34,6 +34,11 @@ test_A = (T, cb) ->
 
     await T.test_rpc c, "foo", { i : 4 } , { y : 6 }, defer()
     await T.test_rpc c, "bar", { j : 2, k : 7 }, { y : 14}, defer()
+    
+    bad = "XXyyXX"
+    await c.invoke bad, {}, defer err, res
+    T.search err, /unknown method/, "method '#{bad}' should not be found"
+    
     x.close()
     x = c = null
   cb ok

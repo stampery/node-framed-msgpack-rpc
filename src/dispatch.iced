@@ -156,7 +156,7 @@ exports.Dispatch = class Dispatch extends Packetizer
       debug_msg.call()
 
     if pair then pair[1].call pair[0], param, response
-    else if response? then response.error new Error "unknown method #{method}"
+    else if response? then response.error "unknown method: #{method}"
       
   ##-----------------------------------------
 

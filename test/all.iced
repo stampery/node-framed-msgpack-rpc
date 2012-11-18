@@ -13,6 +13,14 @@ class Tester
   constructor : ->
     @_ok = true
 
+  search : (s, re, msg) ->
+    @assert (s? and s.search(re) >= 0), msg
+
+  assert : (f, what) ->
+    if not f
+      console.log "Assertion failed: #{what}"
+      @_ok = false
+
   equal : (a,b,what) ->
     if not deep_equal a, b
       console.log "In #{what}: #{JSON.stringify a} != #{JSON.stringify b}".red
@@ -69,6 +77,7 @@ class Runner
       re = /.*\.(iced|coffee)$/
       for file in files when file.match(re) and file isnt base
         @_files.push file
+      @_files.sort()
     cb ok
   
   ##-----------------------------------------
