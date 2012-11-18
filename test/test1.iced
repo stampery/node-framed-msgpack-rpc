@@ -33,5 +33,7 @@ exports.test1 = (T, cb) ->
 
     await T.test_rpc c, "foo", { i : 4 } , { y : 6 }, defer()
     await T.test_rpc c, "bar", { j : 2, k : 7 }, { y : 14}, defer()
-    
+    x = null
+    c = null
+    await setTimeout defer(), 10
   cb ok

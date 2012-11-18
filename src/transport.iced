@@ -45,13 +45,17 @@ exports.TcpTransport = class TcpTransport extends Dispatch
     cb res
 
   ##-----------------------------------------
+
+  handle_close : () ->
+    # noop for now, maybe do something clever in subclasses
+   
+  ##-----------------------------------------
   
   activate_stream : () ->
     x = @tcp_stream
     x.on 'error', (err) => @handle_error err
     x.on 'close', ()    => @handle_close()
     x.on 'data',  (msg) =>
-      console.log "DATA #{msg}"
       @packetize_data msg
 
     @_write_closed_warn = false
@@ -60,7 +64,6 @@ exports.TcpTransport = class TcpTransport extends Dispatch
   ##-----------------------------------------
   
   _connect_critical_section : (cb) ->
-    console.log "Connecting with opts #{JSON.stringify @tcp_opts}"
     x = net.connect @tcp_opts
     x.setNoDelay true unless @do_tcp_delay
 
