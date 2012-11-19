@@ -7,9 +7,14 @@ PORT = 8881
 s = null
 
 crypto = require 'crypto'
+rj = require 'random-json'
+
+##=======================================================================
 
 class P_v1 extends server.Handler
   h_reflect : (arg, res) -> res.result arg
+
+##=======================================================================
 
 exports.init = (cb) ->
   
@@ -21,7 +26,31 @@ exports.init = (cb) ->
   await s.listen defer err
   cb err
 
+##=======================================================================
+
 exports.volley_of_strings = (T, cb) ->
+  n = 100
+  genfn = (rcb) ->
+    sz = 10000
+    await crypto.randomBytes sz, defer ex, buf
+    rcb { r : buf.toString 'base64' }
+  
+  await run_test n, T, genfn, defer()
+  cb()
+    
+##=======================================================================
+
+exports.volley_of_objects = (T, cb) ->
+  n = 400
+  genfn = (rcb) ->
+    await rj.obj defer obj
+    rcb obj
+  await run_test n, T, genfn, defer()
+  cb()
+
+##=======================================================================
+
+run_test = (n, T, obj_gen, cb) ->
 
   await T.connect PORT, "P.1", defer x, c
   
@@ -31,12 +60,8 @@ exports.volley_of_strings = (T, cb) ->
     res = []
     err = []
     
-    n = 100
-    sz = 10000
-    
     for i in [0..n]
-      await crypto.randomBytes sz, defer ex, buf
-      args[i] = { r : buf.toString 'base64' }
+      await obj_gen defer args[i]
       
     await
       for a,i in args
@@ -49,6 +74,7 @@ exports.volley_of_strings = (T, cb) ->
 
   cb()
 
+##=======================================================================
 
 exports.destroy = (cb) ->
   await s.close defer()
