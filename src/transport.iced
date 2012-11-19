@@ -10,7 +10,7 @@ exports.TcpTransport = class TcpTransport extends Dispatch
   ##-----------------------------------------
 
   constructor : ({ @port, @host, @tcp_opts, @tcp_stream, @log_hook,
-                   @parent, @do_tcp_delay}) ->
+                   @parent, @do_tcp_delay, @reconnect_delay}) ->
     super
     
     @host = "localhost" if not @host or @host is "-"
@@ -42,7 +42,7 @@ exports.TcpTransport = class TcpTransport extends Dispatch
     else
       res = true
     @_lock.release()
-    cb res
+    cb res if cb
 
   ##-----------------------------------------
 
@@ -53,9 +53,26 @@ exports.TcpTransport = class TcpTransport extends Dispatch
    
   ##-----------------------------------------
 
-  handle_close : () ->
-    # noop for now, maybe do something clever in subclasses
+  handle_error : (e) ->
+    @_warn e
+    @close()
+    @_reconnect()
    
+  ##-----------------------------------------
+
+  handle_close : () ->
+    @tcp_stream = null if @tcp_stream
+    @_reconnect()
+   
+  ##-----------------------------------------
+
+  reconnect : () ->
+    throw new Error "Reconnect called when @tcp_stream != null" if @tcp_stream
+    if @reconnect_delay?
+      await setTimeout defer(), @reconnect_delay
+      @_warn "reconnecting..."
+      @connect()
+ 
   ##-----------------------------------------
   
   activate_stream : () ->
