@@ -17,6 +17,7 @@ exports.TcpTransport = class TcpTransport extends Dispatch
     @tcp_opts = {} unless @tcp_opts
     @tcp_opts.host = @host
     @tcp_opts.port = @port
+    @_try_reconnect = true
     
     @_remote_str = [ @host,  @port].join ":"
     @_lock = new Lock()
@@ -47,6 +48,7 @@ exports.TcpTransport = class TcpTransport extends Dispatch
   ##-----------------------------------------
 
   close : () ->
+    @_try_reconnect = false
     if @tcp_stream
       @tcp_stream.end()
       @tcp_stream = null
@@ -66,9 +68,9 @@ exports.TcpTransport = class TcpTransport extends Dispatch
    
   ##-----------------------------------------
 
-  reconnect : () ->
+  _reconnect : () ->
     throw new Error "Reconnect called when @tcp_stream != null" if @tcp_stream
-    if @reconnect_delay?
+    if @reconnect_delay? and @_try_reconnect
       await setTimeout defer(), @reconnect_delay
       @_warn "reconnecting..."
       @connect()
@@ -125,7 +127,7 @@ exports.TcpTransport = class TcpTransport extends Dispatch
       x.end()
  
   ##-----------------------------------------
-  # To fulfill the packetizer contract, the following 1
+  # To fulfill the packetizer contract, the following...
   
   _raw_write : (msg, encoding) ->
     if @tcp_stream
