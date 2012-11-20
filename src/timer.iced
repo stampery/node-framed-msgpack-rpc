@@ -1,6 +1,6 @@
 
 
-exports.time = time = () -> ((new Data()).getTime()
+exports.time = time = () -> (new Date()).getTime()
 
 exports.Timer = class Timer
   constructor : (opts) ->

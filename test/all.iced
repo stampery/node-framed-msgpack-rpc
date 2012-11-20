@@ -3,7 +3,7 @@ fs = require 'fs'
 path = require 'path'
 colors = require 'colors'
 deep_equal = require 'deep-equal'
-{Logger,Transport,Client} = require '../src/main'
+{Logger,RobustTransport,Transport,Client} = require '../src/main'
 
 CHECK = "\u2714"
 FUUUU = "\u2716"
@@ -14,9 +14,10 @@ ARROW = "\u2192"
 
 class TestLogger extends Logger
   
-  @my_ohook : (m) -> console.log " #{ARROW} #{m} (this is expected)".yellow
+  @my_ohook : (m) -> console.log " #{ARROW} #{m}".yellow
   
   warn : (m) -> @_log m, "W", TestLogger.my_ohook
+  error : (m) -> @_log m, "E", TestLogger.my_ohook
 
 ##-----------------------------------------------------------------------
 
@@ -58,8 +59,10 @@ class Tester
 
   is_ok : () -> @_ok
 
-  connect : (port, prog, cb) ->
-    x = new Transport { port, host : "-" }
+  connect : (port, prog, cb, rtopts) ->
+    opts = { port, host : "-" }
+    klass = if rtopts then RobustTransport else Transport
+    x = new klass opts, rtopts
     await x.connect defer ok
     if not ok
       @error "Failed to connect in TcpTransport..."

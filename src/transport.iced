@@ -3,6 +3,7 @@ net = require 'net'
 {Lock} = require './lock'
 {Dispatch} = require './dispatch'
 {Logger} = require './log'
+{Timer} = require './timer'
 
 ##=======================================================================
 
@@ -21,16 +22,22 @@ exports.TcpTransport = class TcpTransport extends Dispatch
     @_explicit_close = false
     
     @_remote_str = [ @host, @port].join ":"
-    @log_obj = new Logger {} unless @log_obj
+    @set_logger @log_obj or new Logger {} 
+    
     @_lock = new Lock()
     @_write_closed_warn = false
     @_generation = 1
-    @log_obj.set_remote @_remote_str
 
   ##-----------------------------------------
 
   remote : () -> @_remote_str
    
+  ##-----------------------------------------
+
+  set_logger : (o) ->
+    @log_obj = o
+    @log_obj.set_remote @_remote_str
+  
   ##-----------------------------------------
 
   _warn  : (e) -> @log_obj.warn  e
@@ -175,7 +182,7 @@ exports.RobustTransport = class RobustTransport extends TcpTransport
   #    queue_max -- the limit to how many calls we'll queue while we're
   #       waiting on a reconnect.
   # 
-  #    warn_thresshold -- if a call takes more than this number of seconds,
+  #    warn_threshhold -- if a call takes more than this number of seconds,
   #       a warning will be fired when the RPC completes.
   # 
   #    error_threshhold -- if a call *is taking* more than this number of
@@ -213,15 +220,21 @@ exports.RobustTransport = class RobustTransport extends TcpTransport
   _connect_loop : (re = false, cb) ->
     prfx = if re then "re" else ""
     i = 0
+    
     await @_lock.acquire defer()
+    
     while not @tcp_stream and not @_explicit_close
       i++
       await setTimeout defer(), @reconnect_delay*1000
-      @_info "#{prfx}connecting (attempt #{i})"
-      await @_connect_critical_section defer ok if not @_explicit_close
-    s = if i is 1 then "" else "s"
-    @_warn "#{prfx}connected after #{i} attempt#{s}"
-    @_flush_queue()
+      if not @_explicit_close
+        @_info "#{prfx}connecting (attempt #{i})"
+        await @_connect_critical_section defer ok
+    
+    if @tcp_stream
+      s = if i is 1 then "" else "s"
+      @_warn "#{prfx}connected after #{i} attempt#{s}"
+      @_flush_queue()
+      
     @_lock.release()
     cb() if cb
 
@@ -232,6 +245,7 @@ exports.RobustTransport = class RobustTransport extends TcpTransport
     [ OK, TIMEOUT ] = [0..1]
     tm = new Timer start : true
     rv = new iced.Rendezvous
+    meth = @make_method arg.program, arg.method
 
     et = if @error_threshhold then @error_threshhold*1000 else 0
     wt = if @warn_threshhold then @warn_threshhold*1000 else 0
@@ -240,7 +254,7 @@ exports.RobustTransport = class RobustTransport extends TcpTransport
     to = setTimeout rv.id(TIMEOUT).defer(), et if et
 
     # Make the actual RPC
-    Dispatch.invoke.call @, meth, arg, rv.id(OK).defer rpc_res...
+    Dispatch.prototype.invoke.call @, arg, rv.id(OK).defer rpc_res...
 
     # Wait for the first one...
     await rv.wait defer which
@@ -250,7 +264,7 @@ exports.RobustTransport = class RobustTransport extends TcpTransport
     
     while flag
       if which is TIMEOUT
-        @_error "RPC call to '#{arg.meth}' is taking > #{et/1000}s"
+        @_error "RPC call to '#{meth}' is taking > #{et/1000}s"
         await rv.wait defer which
       else
         clearTimeout to
@@ -273,6 +287,9 @@ exports.RobustTransport = class RobustTransport extends TcpTransport
     if @tcp_stream
       if @_time_rpcs then @_timed_invoke arg, cb
       else                super arg, cb
+    else if @_explicit_close
+      @_warn "invoke call after explicit close"
+      cb "socket was closed", {}
     else if @_waiters.length < @queue_max
       @_waiters.push [ arg, cb ]
       @_info "Queuing call to #{meth} (num queued: #{@_waiters.length})"
