@@ -37,7 +37,7 @@ exports.reconnect = (T, cb) ->
     for i in [0...tries]
       restart = (i isnt tries-1)
       await T.test_rpc c, "foo", { i : 4 } , { y : 6 }, defer()
-      await setTimeout defer(), 1000
+      await setTimeout defer(), 10
 
     x.close()
     

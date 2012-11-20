@@ -70,7 +70,7 @@ exports.TcpTransport = class TcpTransport extends Dispatch
 
   _handle_error : (e, g) ->
     @_close g
-    @_warn e
+    @_error e
     @_reconnect()
    
   ##-----------------------------------------
@@ -100,7 +100,17 @@ exports.TcpTransport = class TcpTransport extends Dispatch
     # this way we don't close the next generation of connection
     # in the case of a reconnect....
     cg = @_generation
-    
+
+    #
+    # MK 2012/12/20 -- Revisit me!
+    # 
+    # It if my current belief that we don't have to listen to the event
+    # 'end', because a 'close' event will always follow it, and we do
+    # act on the close event. The distance between the two gives us
+    # the time to act on a TCP-half-close, which we are not doing.
+    # So for now, we are going to ignore the 'end' and just act
+    # on the 'close'.
+    # 
     x.on 'error', (err) => @_handle_error cg, err
     x.on 'close', ()    => @_handle_close cg
     x.on 'data',  (msg) => @packetize_data msg
