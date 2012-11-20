@@ -89,19 +89,28 @@ exports.Dispatch = class Dispatch extends Packetizer
    
   ##-----------------------------------------
 
-  invoke : ({program, method, args}, cb) ->
+  invoke : ({program, method, args, notify}, cb) ->
 
     method = @make_method program, method
     
     seqid = @_next_seqid()
-    msg = [ @REQUEST, seqid, method, args ]
+    
+    if notify
+      type = @NOTIFY
+      dtype = dbg.constants.type.CLIENT_NOTIFY
+    else
+      type = @REQUEST
+      dtype = dbg.constants.type.CLIENT_CALL
+      
+    msg = [ type, seqid, method, args ]
 
     if @_debug_hook
+      type = if notify then 
       debug_msg = new debug.Message {
         method, seqid, arg,
         dir : dbg.constants.dir.OUTGOING,
         remote : @remote()
-        type : dbg.constants.type.CLIENT_CALL
+        type : dtype
       }
       @_debug_hook debug_msg.msg()
         
@@ -109,32 +118,14 @@ exports.Dispatch = class Dispatch extends Packetizer
     # Down to the packetizer, which will jump back up to the Transport!
     @send msg
 
-    await (@_invocations[seqid] = defer(error,result) )
+    if cb? or not notify
+      await (@_invocations[seqid] = defer(error,result) )
 
-    if @_debug_hook
-      debug_msg.response error, result
-      @_debug_hook debug_msg.msg()
+      if @_debug_hook
+        debug_msg.response error, result
+        @_debug_hook debug_msg.msg()
         
-    cb error, result
-
-  ##-----------------------------------------
-
-  notify : ({program, method, args}) ->
-    
-    method = @make_method program, method
-    
-    msg = [ @NOTIFY, method, arg ]
-
-    if @_debug_hook
-      debug_msg = new dbg.Message {
-        method, arg,
-        dir : dbg.constants.dir.OUTGOING,
-        remote : @remote()
-        type : dbg.constants.type.CALL_NOTIFY
-      }
-      @_debug_hook debug_msg.msg()
-        
-    @send msg
+    cb error, result if cb
 
   ##-----------------------------------------
 

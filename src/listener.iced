@@ -46,7 +46,6 @@ exports.TcpListener = class TcpListener
 
   close : (cb) ->
     await @_tcp_server.close defer() if @_tcp_server
-    await setTimeout defer(), 100
     @_tcp_server = null
     cb()
  

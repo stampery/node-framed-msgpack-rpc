@@ -85,8 +85,8 @@ class Runner
       @err "In reading #{@_dir}: #{err}"
     else
       ok = true
-      re = /.*\.(iced|coffee)$/
-      for file in files when file.match(re) and file isnt base
+      re = /test.*\.(iced|coffee)$/
+      for file in files when file.match(re) 
         @_files.push file
       @_files.sort()
     cb ok

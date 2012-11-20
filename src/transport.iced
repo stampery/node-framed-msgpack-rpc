@@ -10,14 +10,14 @@ exports.TcpTransport = class TcpTransport extends Dispatch
   ##-----------------------------------------
 
   constructor : ({ @port, @host, @tcp_opts, @tcp_stream, @log_hook,
-                   @parent, @do_tcp_delay, @reconnect_delay}) ->
+                   @parent, @do_tcp_delay}) ->
     super
     
     @host = "localhost" if not @host or @host is "-"
     @tcp_opts = {} unless @tcp_opts
     @tcp_opts.host = @host
     @tcp_opts.port = @port
-    @_try_reconnect = true
+    @_explicit_close = false
     
     @_remote_str = [ @host,  @port].join ":"
     @_lock = new Lock()
@@ -48,7 +48,7 @@ exports.TcpTransport = class TcpTransport extends Dispatch
   ##-----------------------------------------
 
   close : () ->
-    @_try_reconnect = false
+    @_explicit_close = true
     if @tcp_stream
       @tcp_stream.end()
       @tcp_stream = null
@@ -68,12 +68,7 @@ exports.TcpTransport = class TcpTransport extends Dispatch
    
   ##-----------------------------------------
 
-  _reconnect : () ->
-    throw new Error "Reconnect called when @tcp_stream != null" if @tcp_stream
-    if @reconnect_delay? and @_try_reconnect
-      await setTimeout defer(), @reconnect_delay
-      @_warn "reconnecting..."
-      @connect()
+  _reconnect : () -> null
  
   ##-----------------------------------------
   
@@ -137,3 +132,64 @@ exports.TcpTransport = class TcpTransport extends Dispatch
       @_warn "attempt to write to closed connection"
  
   ##-----------------------------------------
+
+##=======================================================================
+
+exports.ReconnectTcpTransport = class ReconnectTcpTransport extends TcpTransport
+   
+  ##-----------------------------------------
+
+  constructor : (d) ->
+    super d
+
+    # in milliseconds...
+    @reconnect_delay = d.reconnect_delay or 1000
+    @queue_max = d.queue_max or 1000
+    @_waiters = []
+   
+  ##-----------------------------------------
+
+  _reconnect : () ->
+    # Do not reconnect on an explicit close
+    @_connect_loop true if not @_explicit_close
+
+  ##-----------------------------------------
+
+  _flush_queue : () ->
+    tmp = @_waiters
+    @_waiters = []
+    for w in tmp
+      console.log "invoking....."
+      @invoke w...
+   
+  ##-----------------------------------------
+ 
+  _connect_loop : (re = false, cb) ->
+    prfx = if re then "re" else ""
+    i = 0
+    await @_lock.acquire defer()
+    while not @tcp_stream
+      i++
+      await setTimeout defer(), @reconnect_delay
+      @_warn "#{prfx}connecting (attempt #{i})"
+      await @_connect_critical_section defer ok
+    @_warn "#{prfx}connected after #{i} attempts"
+    @_flush_queue()
+    @_lock.release()
+    cb() if cb
+
+  ##-----------------------------------------
+
+  invoke : (arg, cb) ->
+    console.log "XXX"
+    if @tcp_stream
+      super arg, cb
+    else if @_waiters.length < @queue_max
+      console.log "do push!"
+      @_waiters.push [ arg, cb ]
+    else
+      console.log "queue overflow..."
+      @_warn "Queue overflow for #{@make_method arg.program, arg.method}"
+  
+##=======================================================================
+

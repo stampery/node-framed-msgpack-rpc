@@ -11,7 +11,7 @@ exports.Client = class Client
   #-----------------------------------------
 
   invoke : (method, args, cb) ->
-    arg = { @program, method, args }
+    arg = { @program, method, args, notify : false }
     await @transport.invoke arg, defer err, res
     cb err, res
 
@@ -20,6 +20,6 @@ exports.Client = class Client
   notify : (method, args) ->
     method = @make_method method
     program = @_program
-    @transport.notify { @program, method, args }
+    @transport.invoke { @program, method, args, notify : true }
       
 ##========================================================================
