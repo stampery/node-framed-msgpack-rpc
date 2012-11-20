@@ -2,10 +2,11 @@
 
 PORT = 8881
 
+# this is a jenky server that crashes every time it does anything!
+# useful for testing the reconnecting client...
 class P_v1 extends server.Handler
   h_foo : (arg, res) ->
     res.result { y : arg.i + 2 }
-    console.log "jenky exit!"
     process.exit 0
 
 s = new server.ContextualServer 

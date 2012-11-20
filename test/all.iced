@@ -3,17 +3,33 @@ fs = require 'fs'
 path = require 'path'
 colors = require 'colors'
 deep_equal = require 'deep-equal'
-{Transport,Client} = require '../src/main'
+{Logger,Transport,Client} = require '../src/main'
 
 CHECK = "\u2714"
 FUUUU = "\u2716"
+ARROW = "\u2192"
+
+##-----------------------------------------------------------------------
+
+
+class TestLogger extends Logger
+  
+  @my_ohook : (m) -> console.log " #{ARROW} #{m}".yellow
+
+  info : (m) -> @_log m, "I", TestLogger.my_ohook
+  warn : (m) -> @_log m, "W", TestLogger.my_ohook
 
 ##-----------------------------------------------------------------------
 
 class Tester
   constructor : ->
     @_ok = true
+    @_logger = null
 
+  logger : () ->
+    @_logger = new TestLogger {} if not @_logger?
+    @_logger
+    
   search : (s, re, msg) ->
     @assert (s? and s.search(re) >= 0), msg
 

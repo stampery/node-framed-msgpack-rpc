@@ -2,6 +2,7 @@
 net = require 'net'
 {Lock} = require './lock'
 {Dispatch} = require './dispatch'
+{Logger} = require './log'
 
 ##=======================================================================
 
@@ -9,7 +10,7 @@ exports.TcpTransport = class TcpTransport extends Dispatch
 
   ##-----------------------------------------
 
-  constructor : ({ @port, @host, @tcp_opts, @tcp_stream, @log_hook,
+  constructor : ({ @port, @host, @tcp_opts, @tcp_stream, @log_obj,
                    @parent, @do_tcp_delay}) ->
     super
     
@@ -19,10 +20,12 @@ exports.TcpTransport = class TcpTransport extends Dispatch
     @tcp_opts.port = @port
     @_explicit_close = false
     
-    @_remote_str = [ @host,  @port].join ":"
+    @_remote_str = [ @host, @port].join ":"
+    @log_obj = new Logger {} unless @log_obj
     @_lock = new Lock()
     @_write_closed_warn = false
     @_generation = 1
+    @log_obj.set_remote @_remote_str
 
   ##-----------------------------------------
 
@@ -30,7 +33,19 @@ exports.TcpTransport = class TcpTransport extends Dispatch
    
   ##-----------------------------------------
 
-  _warn : (err) ->
+  _warn  : (e) -> @log_obj.warn  e
+  _info  : (e) -> @log_obj.info  e
+  _fatal : (e) -> @log_obj.fatal e
+  _debug : (e) -> @log_obj.debug e
+  _error : (e) -> @log_obj.error e
+    
+  ##-----------------------------------------
+
+  connect : (cb) ->
+    await @_lock.acquire defer()
+    if not @tcp_stream?
+      await @_connect_critical_section defer res
+    
     fn = @log_hook or console.log
     fn "TcpTransport(#{@_remote_str}): #{err}"
    
@@ -79,8 +94,7 @@ exports.TcpTransport = class TcpTransport extends Dispatch
     x = @tcp_stream
     x.on 'error', (err) => @handle_error err
     x.on 'close', ()    => @handle_close()
-    x.on 'data',  (msg) =>
-      @packetize_data msg
+    x.on 'data',  (msg) => @packetize_data msg
 
     @_write_closed_warn = false
     @_generation++
@@ -153,7 +167,6 @@ exports.ReconnectTcpTransport = class ReconnectTcpTransport extends TcpTransport
     tmp = @_waiters
     @_waiters = []
     for w in tmp
-      console.log "invoking....."
       @invoke w...
    
   ##-----------------------------------------
@@ -162,11 +175,11 @@ exports.ReconnectTcpTransport = class ReconnectTcpTransport extends TcpTransport
     prfx = if re then "re" else ""
     i = 0
     await @_lock.acquire defer()
-    while not @tcp_stream
+    while not @tcp_stream and not @_explicit_close
       i++
       await setTimeout defer(), @reconnect_delay
       @_warn "#{prfx}connecting (attempt #{i})"
-      await @_connect_critical_section defer ok
+      await @_connect_critical_section defer ok if not @_explicit_close
     @_warn "#{prfx}connected after #{i} attempts"
     @_flush_queue()
     @_lock.release()
@@ -175,15 +188,15 @@ exports.ReconnectTcpTransport = class ReconnectTcpTransport extends TcpTransport
   ##-----------------------------------------
 
   invoke : (arg, cb) ->
-    console.log "XXX"
+    meth = @make_method arg.program, arg.method
     if @tcp_stream
       super arg, cb
     else if @_waiters.length < @queue_max
-      console.log "do push!"
       @_waiters.push [ arg, cb ]
+      @_info "Queuing call to #{meth} (num queued: #{@_waiters.length})"
     else
       console.log "queue overflow..."
-      @_warn "Queue overflow for #{@make_method arg.program, arg.method}"
+      @_warn "Queue overflow for #{meth}"
   
 ##=======================================================================
 

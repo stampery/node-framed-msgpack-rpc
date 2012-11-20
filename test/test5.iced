@@ -1,4 +1,4 @@
-{server,ReconnectTransport,Client} = require '../src/main'
+{ReconnectTransport,Client} = require '../src/main'
 {fork} = require 'child_process'
 
 ## Do the same test as test1, a second time, must to make
@@ -6,9 +6,10 @@
 
 PORT = 8881
 n = null
+restart = true
 
 jenky_server_loop =  (cb) ->
-  loop 
+  while restart
     n = fork __dirname + "/jenky_server.iced"
     await n.on 'message', defer msg
     if cb?
@@ -23,7 +24,7 @@ exports.init = (cb) ->
 
 exports.reconnect = (T, cb) ->
   
-  x = new ReconnectTransport { port : PORT, host : "-" }
+  x = new ReconnectTransport { port : PORT, host : "-", log_obj : T.logger() }
   await x.connect defer ok
   
   if not ok
@@ -32,12 +33,12 @@ exports.reconnect = (T, cb) ->
     ok = false
     c = new Client x, "P.1"
 
-    for i in [0..4]
-      console.log "X #{i}"
+    tries = 4
+    for i in [0...tries]
+      restart = (i isnt tries-1)
       await T.test_rpc c, "foo", { i : 4 } , { y : 6 }, defer()
-      await setTimeout defer(), 100
+      await setTimeout defer(), 10
 
     x.close()
-    n.kill 0
     
   cb ok

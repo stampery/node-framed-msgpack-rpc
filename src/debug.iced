@@ -130,6 +130,8 @@ exports.make_hook = (flgs, fn) ->
 ##=======================================================================
 
 exports.Message = class Message
+  """A debug message --- a wrapper around a dictionary object, with
+  a few additional methods."""
 
   constructor : (@msg, @hook = null) ->
 
@@ -143,3 +145,5 @@ exports.Message = class Message
   call : -> @hook @msg()
 
   set : (k,v) -> @msg[k] = v
+
+##=======================================================================
