@@ -178,7 +178,7 @@ exports.ReconnectTcpTransport = class ReconnectTcpTransport extends TcpTransport
     while not @tcp_stream and not @_explicit_close
       i++
       await setTimeout defer(), @reconnect_delay
-      @_warn "#{prfx}connecting (attempt #{i})"
+      @_info "#{prfx}connecting (attempt #{i})"
       await @_connect_critical_section defer ok if not @_explicit_close
     @_warn "#{prfx}connected after #{i} attempts"
     @_flush_queue()
