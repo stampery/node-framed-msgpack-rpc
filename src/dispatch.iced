@@ -129,6 +129,14 @@ exports.Dispatch = class Dispatch extends Packetizer
 
   ##-----------------------------------------
 
+  _dispatch_force_eof : () ->
+    inv = @_invocations
+    @_invocations = []
+    for cb in inv
+      cb "EOF from server", {}
+   
+  ##-----------------------------------------
+
   _serve : ({method, param, response}) ->
 
     pair = @get_handler_pair method

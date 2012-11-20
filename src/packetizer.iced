@@ -4,6 +4,8 @@
 
 ##=======================================================================
 
+# This is a hack of sorts, in which we've taken the important
+# parts of the Msgpack spec for reading an int from the string.
 msgpack_frame_len = (buf) ->
   b = buf[0]
   if b < 0x80 then 1
@@ -20,12 +22,16 @@ exports.Packetizer = class Packetizer
   (like a TcpTransport below).  Should be inherited by such a class.
   The subclasses should implement:
   
-     @_write(msg,enc) - write this msg to the stream with the
-       given encoding.
+     @_raw_write(msg,enc) - write this msg to the stream with the
+       given encoding. Typically handled at the transport level
+       (2 classes higher in the inheritance graph)
       
-     @_fatal(err) - report an error with the stream
+     @handle_error(err) - report an error with the stream.  Typically
+       calls up to the Transport class (2 classes higher).
     
-     @_dispatch(msg) - emit a packetized incoming message
+     @_dispatch(msg) - emit a packetized incoming message. Typically
+       handled by the Dispatcher (1 class higher in the inheritance
+       graph).
 
   The subclass should call @packetize_data(m) whenever it has data to stuff
   into the packetizer's input path, and call @send(m) whenever it wants
@@ -63,6 +69,11 @@ exports.Packetizer = class Packetizer
 
   ##-----------------------------------------
 
+  _packetize_error : (err) ->
+    @handle_error "In packetizer: #{err}"
+   
+  ##-----------------------------------------
+
   _get_frame : () ->
     # We need at least one byte to get started
     return @WAIT unless @_ring.len() > 0
@@ -76,7 +87,7 @@ exports.Packetizer = class Packetizer
 
     frame_len = msgpack_frame_len f0
     unless frame_len
-      @_fatal "Bad frame header received"
+      @_packetize_error "Bad frame header received"
       return @ERR
 
     # We now know how many bytes to suck in just to get the frame
@@ -99,7 +110,7 @@ exports.Packetizer = class Packetizer
       when 'undefined'
         @WAIT
       else
-        @_fatal "bad frame; got type=#{typ}, which is wrong"
+        @_packetize_error "bad frame; got type=#{typ}, which is wrong"
         @ERR
 
     return res
@@ -112,7 +123,7 @@ exports.Packetizer = class Packetizer
     ret = if l > @_ring.len() or not (b = @_ring.grab l)?
       @WAIT
     else if not (msg = unpack b)?
-      @_fatal "bad encoding found in data/payload; len=#{l}"
+      @_packetize_error "bad encoding found in data/payload; len=#{l}"
       @ERR
     else
       @_ring.consume l

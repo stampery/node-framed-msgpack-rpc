@@ -57,6 +57,7 @@ exports.TcpTransport = class TcpTransport extends Dispatch
 
   handle_error : (e) ->
     @_warn e
+    @_dispatch_force_eof()
     @close()
     @_reconnect()
    
@@ -68,6 +69,8 @@ exports.TcpTransport = class TcpTransport extends Dispatch
    
   ##-----------------------------------------
 
+  # In other classes we can override this...
+  # See 'ReconnectTcpTRansport'
   _reconnect : () -> null
  
   ##-----------------------------------------
@@ -112,15 +115,6 @@ exports.TcpTransport = class TcpTransport extends Dispatch
 
     cb ok
 
-  ##-----------------------------------------
-  
-  _fatal : (err) ->
-    @_warn err
-    if @tcp_stream
-      x = @tcp_stream
-      @tcp_stream = null
-      x.end()
- 
   ##-----------------------------------------
   # To fulfill the packetizer contract, the following...
   
