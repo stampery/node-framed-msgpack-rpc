@@ -26,7 +26,7 @@ exports.Packetizer = class Packetizer
        given encoding. Typically handled at the transport level
        (2 classes higher in the inheritance graph)
       
-     @handle_error(err) - report an error with the stream.  Typically
+     @_packetize_error(err) - report an error with the stream.  Typically
        calls up to the Transport class (2 classes higher).
     
      @_dispatch(msg) - emit a packetized incoming message. Typically
@@ -67,11 +67,6 @@ exports.Packetizer = class Packetizer
       @_raw_write b.toString(enc), enc
     return true
 
-  ##-----------------------------------------
-
-  _packetize_error : (err) ->
-    @handle_error "In packetizer: #{err}"
-   
   ##-----------------------------------------
 
   _get_frame : () ->

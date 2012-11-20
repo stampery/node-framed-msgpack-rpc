@@ -13,7 +13,7 @@ exports.Logger = class Logger
   set_remote : (r) -> @remote = r
   set_prefix : (p) -> @prefix = p
 
-  info : (m) ->  @_log m, "I"
+  info : (m) ->  
   warn : (m) ->  @_log m, "W"
   error : (m) -> @_log m, "E"
   fatal : (m) -> @_log m, "F"

@@ -62,13 +62,20 @@ exports.Dispatch = class Dispatch extends Packetizer
   ##-----------------------------------------
 
   _dispatch_handle_response : ({seqid, error, result}) ->
+    @_call_cb { seqid, error, result }
+    
+  ##-----------------------------------------
+  
+  _call_cb : ({seqid, error, result}) ->
     cb = @_invocations[seqid]
     if cb
       delete @_invocations[seqid]
       cb error, result
-    else
-      @_warn "Unknown response for seqid=#{seqid}"
    
+  ##-----------------------------------------
+
+  cancel : (seqid) -> @_call_cb { seqid, error : "cancelled", result : null } 
+ 
   ##-----------------------------------------
 
   _next_seqid : () ->
@@ -89,7 +96,7 @@ exports.Dispatch = class Dispatch extends Packetizer
    
   ##-----------------------------------------
 
-  invoke : ({program, method, args, notify}, cb) ->
+  invoke : ({program, method, args, notify}, cb, out) ->
 
     method = @make_method program, method
     
@@ -119,6 +126,10 @@ exports.Dispatch = class Dispatch extends Packetizer
     @send msg
 
     if cb? or not notify
+
+      if out?
+        out.cancel = () => @cancel seqid
+        
       await (@_invocations[seqid] = defer(error,result) )
 
       if @_debug_hook
@@ -131,8 +142,8 @@ exports.Dispatch = class Dispatch extends Packetizer
 
   _dispatch_force_eof : () ->
     inv = @_invocations
-    @_invocations = []
-    for cb in inv
+    @_invocations = {}
+    for key,cb of inv
       cb "EOF from server", {}
    
   ##-----------------------------------------

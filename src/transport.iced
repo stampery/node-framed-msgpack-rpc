@@ -45,16 +45,6 @@ exports.TcpTransport = class TcpTransport extends Dispatch
     await @_lock.acquire defer()
     if not @tcp_stream?
       await @_connect_critical_section defer res
-    
-    fn = @log_hook or console.log
-    fn "TcpTransport(#{@_remote_str}): #{err}"
-   
-  ##-----------------------------------------
-
-  connect : (cb) ->
-    await @_lock.acquire defer()
-    if not @tcp_stream?
-      await @_connect_critical_section defer res
     else
       res = true
     @_lock.release()
@@ -64,22 +54,35 @@ exports.TcpTransport = class TcpTransport extends Dispatch
 
   close : () ->
     @_explicit_close = true
-    if @tcp_stream
+    @_close @_generation
+
+  ##-----------------------------------------
+  
+  _close : (g_wrapped) ->
+    g_curr = @_generation
+    @_generation++
+    @_dispatch_force_eof()
+    if (g_curr is g_wrapped) and @tcp_stream
       @tcp_stream.end()
       @tcp_stream = null
    
   ##-----------------------------------------
 
-  handle_error : (e) ->
+  _handle_error : (e, g) ->
+    @_close g
     @_warn e
-    @_dispatch_force_eof()
-    @close()
     @_reconnect()
    
   ##-----------------------------------------
+  
+  _packetize_error : (err) ->
+    @_handle_error "In packetizer: #{err}", @_generation
+    
+  ##-----------------------------------------
 
-  handle_close : () ->
-    @tcp_stream = null if @tcp_stream
+  _handle_close : (g) ->
+    @_info "EOF on transport (generation=#{g})" unless @_explicit_close
+    @_close g
     @_reconnect()
    
   ##-----------------------------------------
@@ -92,12 +95,17 @@ exports.TcpTransport = class TcpTransport extends Dispatch
   
   activate_stream : () ->
     x = @tcp_stream
-    x.on 'error', (err) => @handle_error err
-    x.on 'close', ()    => @handle_close()
+
+    # The current generation needs to be wrapped into this hook;
+    # this way we don't close the next generation of connection
+    # in the case of a reconnect....
+    cg = @_generation
+    
+    x.on 'error', (err) => @_handle_error cg, err
+    x.on 'close', ()    => @_handle_close cg
     x.on 'data',  (msg) => @packetize_data msg
 
     @_write_closed_warn = false
-    @_generation++
 
   ##-----------------------------------------
   
@@ -143,15 +151,36 @@ exports.TcpTransport = class TcpTransport extends Dispatch
 
 ##=======================================================================
 
-exports.ReconnectTcpTransport = class ReconnectTcpTransport extends TcpTransport
+exports.RobustTransport = class RobustTransport extends TcpTransport
    
   ##-----------------------------------------
 
-  constructor : (d) ->
-    super d
+  # Take two dictionaries -- the first is as in TcpTransport,
+  # and the second is configuration parameters specific to this
+  # transport.
+  #
+  #    reconnect_delay -- the number of seconds to delay between attempts
+  #       to reconnect to a downed server.
+  # 
+  #    queue_max -- the limit to how many calls we'll queue while we're
+  #       waiting on a reconnect.
+  # 
+  #    warn_thresshold -- if a call takes more than this number of seconds,
+  #       a warning will be fired when the RPC completes.
+  # 
+  #    error_threshhold -- if a call *is taking* more than this number of
+  #       seconds, we will make an error output while the RPC is outstanding,
+  #       and then make an error after we know how long it took.
+  #      
+  constructor : (sd, d = {}) ->
+    super sd
+    
+    { @queue_max, @warn_threshhold, @error_threshhold} = d
 
-    # in milliseconds...
-    @reconnect_delay = d.reconnect_delay or 1000
+    # in seconds
+    @reconnect_delay = if (x = d.reconnect_delay) then x else 1
+    @_time_rpcs = @warn_threshhold? or @error_threshhold?
+    
     @queue_max = d.queue_max or 1000
     @_waiters = []
    
@@ -177,25 +206,67 @@ exports.ReconnectTcpTransport = class ReconnectTcpTransport extends TcpTransport
     await @_lock.acquire defer()
     while not @tcp_stream and not @_explicit_close
       i++
-      await setTimeout defer(), @reconnect_delay
+      await setTimeout defer(), @reconnect_delay*1000
       @_info "#{prfx}connecting (attempt #{i})"
       await @_connect_critical_section defer ok if not @_explicit_close
-    @_warn "#{prfx}connected after #{i} attempts"
+    s = if i is 1 then "" else "s"
+    @_warn "#{prfx}connected after #{i} attempt#{s}"
     @_flush_queue()
     @_lock.release()
     cb() if cb
 
   ##-----------------------------------------
 
+  _timed_invoke : (arg, cb) ->
+
+    [ OK, TIMEOUT ] = [0..1]
+    tm = new Timer start : true
+    rv = new iced.Rendezvous
+
+    et = if @error_threshhold then @error_threshhold*1000 else 0
+    wt = if @warn_threshhold then @warn_threshhold*1000 else 0
+
+    # Keep a handle to this timeout so we can clear it later on success
+    to = setTimeout rv.id(TIMEOUT).defer(), et if et
+
+    # Make the actual RPC
+    Dispatch.invoke.call @, meth, arg, rv.id(OK).defer rpc_res...
+
+    # Wait for the first one...
+    await rv.wait defer which
+
+    # will we leak memory for the calls that never come back?
+    flag = true
+    
+    while flag
+      if which is TIMEOUT
+        @_error "RPC call to '#{arg.meth}' is taking > #{et/1000}s"
+        await rv.wait defer which
+      else
+        clearTimeout to
+        flag = false
+
+    dur = tm.stop()
+
+    m =  if dur >= et then @_error
+    else if dur >= wt then @_warn
+    else                   null
+
+    m.call @, "RPC call to '#{meth}' finished in #{dur/1000}s" if m
+
+    cb rpc_res...
+   
+  ##-----------------------------------------
+
   invoke : (arg, cb) ->
     meth = @make_method arg.program, arg.method
     if @tcp_stream
-      super arg, cb
+      if @_time_rpcs then @_timed_invoke arg, cb
+      else                super arg, cb
     else if @_waiters.length < @queue_max
       @_waiters.push [ arg, cb ]
       @_info "Queuing call to #{meth} (num queued: #{@_waiters.length})"
     else
-      console.log "queue overflow..."
       @_warn "Queue overflow for #{meth}"
   
 ##=======================================================================

@@ -14,9 +14,8 @@ ARROW = "\u2192"
 
 class TestLogger extends Logger
   
-  @my_ohook : (m) -> console.log " #{ARROW} #{m}".yellow
-
-  info : (m) -> @_log m, "I", TestLogger.my_ohook
+  @my_ohook : (m) -> console.log " #{ARROW} #{m} (this is expected)".yellow
+  
   warn : (m) -> @_log m, "W", TestLogger.my_ohook
 
 ##-----------------------------------------------------------------------

@@ -10,5 +10,5 @@ exports.listener  = require './listener'
 exports.Server = server.Server
 exports.Client = client.Client
 exports.Transport = transport.TcpTransport
-exports.ReconnectTransport = transport.ReconnectTcpTransport
+exports.RobustTransport = transport.RobustTransport
 exports.Logger = log.Logger
