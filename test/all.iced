@@ -16,11 +16,11 @@ ARROW = "\u2192"
 
 class VLogger extends Logger
   
-  @my_ohook : (m) -> console.log " #{ARROW} #{m}".yellow
+  @my_ohook : (c) -> (m) -> console.log " #{ARROW} #{m}"[c]
   
-  info : (m) -> @_log m, "I",  VLogger.my_ohook
-  warn : (m) -> @_log m, "W",  VLogger.my_ohook
-  error : (m) -> @_log m, "E", VLogger.my_ohook
+  info : (m) -> @_log m, "I",  VLogger.my_ohook "cyan"
+  warn : (m) -> @_log m, "W",  VLogger.my_ohook "yellow"
+  error : (m) -> @_log m, "E", VLogger.my_ohook "red"
 
 ##-----------------------------------------------------------------------
 
