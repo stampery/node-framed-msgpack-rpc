@@ -23,16 +23,9 @@ exports.init = (cb) ->
   cb null
 
 exports.reconnect = (T, cb) ->
-  
-  x = new RobustTransport { port : PORT, host : "-" }
-  await x.connect defer ok
-  
-  if not ok
-    console.log "Failed to connect in TcpTransport..."
-  else
-    ok = false
-    c = new Client x, "P.1"
 
+  await T.connect PORT, "P.1", defer(x,c), {}
+  if x
     tries = 4
     for i in [0...tries]
       restart = (i isnt tries-1)
@@ -41,4 +34,4 @@ exports.reconnect = (T, cb) ->
 
     x.close()
     
-  cb ok
+  cb()

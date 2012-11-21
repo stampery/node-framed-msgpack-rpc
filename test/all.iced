@@ -1,18 +1,20 @@
-
 fs = require 'fs'
 path = require 'path'
 colors = require 'colors'
 deep_equal = require 'deep-equal'
 {log,Logger,RobustTransport,Transport,Client} = require '../src/main'
 
+##-----------------------------------------------------------------------
+
 argv = require('optimist').usage('Usage: $0 [-d]').argv
+
+##-----------------------------------------------------------------------
 
 CHECK = "\u2714"
 FUUUU = "\u2716"
 ARROW = "\u2192"
 
 ##-----------------------------------------------------------------------
-
 
 class VLogger extends Logger
   
@@ -24,24 +26,25 @@ class VLogger extends Logger
 
 ##-----------------------------------------------------------------------
 
-if argv.d
-  log.set_default_logger_class VLogger
-else
-  log.set_default_level log.levels.TOP
+if argv.d then log.set_default_logger_class VLogger
+else           log.set_default_level log.levels.TOP
+
+##-----------------------------------------------------------------------
 
 class GlobalTester
 
   connect : (port, prog, cb, rtopts) ->
+    err = null
     opts = { port, host : "-" }
     klass = if rtopts then RobustTransport else Transport
     x = new klass opts, rtopts
     await x.connect defer ok
     if not ok
-      @error "Failed to connect in TcpTransport..."
+      err = "Failed to connect in TcpTransport..."
       x = null
     else
       c = new Client x, prog
-    cb x, c
+    cb err, x, c
 
 ##-----------------------------------------------------------------------
 
@@ -81,7 +84,9 @@ class TestCase
   is_ok : () -> @_ok
 
   connect : (port, prog, cb, rtopts) ->
-    @_global.connect port, prog, cb, rtopts
+    await @_global.connect port, prog, defer(e,x,c), rtopts
+    @error e if e
+    cb x,c
    
 ##-----------------------------------------------------------------------
 

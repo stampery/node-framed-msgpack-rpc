@@ -21,20 +21,14 @@ exports.init = (cb) ->
 exports.test1 = (T, cb) -> test_A T, cb
 exports.test2 = (T, cb) -> test_A T, cb
 
-test_A = (T, cb) -> 
-  x = new Transport { port : PORT, host : "-" }
-  await x.connect defer ok
-  if not ok
-    console.log "Failed to connect in TcpTransport..."
-  else
-    ok = false
-    c = new Client x, "P.1"
-
+test_A = (T, cb) ->
+  await T.connect PORT, "P.1", defer x, c
+  if x
     await T.test_rpc c, "foo", { i : 4 } , { y : 6 }, defer()
     await T.test_rpc c, "bar", { j : 2, k : 7 }, { y : 14}, defer()
     x.close()
     x = c = null
-  cb ok
+  cb()
 
 exports.destroy = (cb) ->
   await s.close defer()

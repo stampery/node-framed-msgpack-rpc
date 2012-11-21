@@ -40,13 +40,10 @@ exports.init = (cb, gto) ->
         
   await s.listen defer err
   if not err
-    rtops = {}
-    await gto.connect PORT, "P.1", defer(x, c), rtops
+    await gto.connect PORT, "P.1", defer(err, x, c), {}
     if x
       clix = x
       cli = c
-    else
-      err = "failed to connect client"
       
   cb err
 

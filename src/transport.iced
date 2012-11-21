@@ -348,3 +348,9 @@ exports.RobustTransport = class RobustTransport extends TcpTransport
   
 ##=======================================================================
 
+exports.createTransport = (opts) ->
+  if opts.robust then new RobustTransport opts, opts
+  else                new TcpTransport opts
+
+##=======================================================================
+

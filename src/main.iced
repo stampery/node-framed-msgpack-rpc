@@ -12,3 +12,4 @@ exports.Client = client.Client
 exports.Transport = transport.TcpTransport
 exports.RobustTransport = transport.RobustTransport
 exports.Logger = log.Logger
+exports.createTransport = transport.createTransport
