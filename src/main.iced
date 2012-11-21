@@ -3,6 +3,7 @@ exports.server       = server       = require './server'
 exports.client       = client       = require './client'
 exports.transport    = transport    = require './transport'
 exports.log          = log          = require './log'
+exports.debug        = debug        = require './debug'
 
 exports.dispatch  = require './dispatch'
 exports.listener  = require './listener'

@@ -11,29 +11,30 @@ F =
   ERROR : 0x10
   ARG : 0x20
   RES : 0x40
-  CLASS : 0x80
+  TYPE : 0x80
   DIR : 0x100
   VERBOSE : 0x200
   ALL : 0xfffffff
 
-F.LEVEL_0 = F.NONE;
-F.LEVEL_1 = F.METHOD | F.CLASS | F.DIR;
-F.LEVEL_2 = F.LEVEL_1 | F.SEQID | F.TIMESTAMP | F.REMOTE;
-F.LEVEL_3 = F.LEVEL_2 | F.ERROR;
-F.LEVEL_4 = F.LEVEL_3 | F.RES | F.ARGS;
+F.LEVEL_0 = F.NONE
+F.LEVEL_1 = F.METHOD | F.TYPE | F.DIR | F.TYPE
+F.LEVEL_2 = F.LEVEL_1 | F.SEQID | F.TIMESTAMP | F.REMOTE
+F.LEVEL_3 = F.LEVEL_2 | F.ERR
+F.LEVEL_4 = F.LEVEL_3 | F.RES | F.ARGS
 
 ##=======================================================================
 
 # String versions of these flags
-sflags =
+SF =
   m : F.METHOD
   a : F.REMOTE
   s : F.SEQID
   t : F.TIMESTAMP
   e : F.ERROR
   p : F.ARG
-  r : F.REPLY
-  c : F.CLASS
+  r : F.RES
+  e : F.ERR
+  c : F.TYPE
   d : F.DIRECTION
   v : F.VERBOSE
   A : F.ALL
@@ -62,10 +63,10 @@ F2S = {}
 F2S[F.DIR] = {}
 F2S[F.DIR][dir.INCOMING] = "in";
 F2S[F.DIR][dir.OUTGOING] = "out";
-F2S[F.CLASS] = {};
-F2S[F.CLASS][type.SERVER] = "server";
-F2S[F.CLASS][type.CLIENT_NOTIFY] = "cli.notify";
-F2S[F.CLASS][type.CLIENT_INVOKE] = "cli.invoke";
+F2S[F.TYPE] = {};
+F2S[F.TYPE][type.SERVER] = "server";
+F2S[F.TYPE][type.CLIENT_NOTIFY] = "cli.notify";
+F2S[F.TYPE][type.CLIENT_INVOKE] = "cli.invoke";
 
 ##=======================================================================
 
@@ -74,7 +75,7 @@ exports.constants =
   type : type
   dir : dir
   flags : F
-  sflags : sflags
+  sflags : SF
   field_to_string : F2S
 
 ##=======================================================================
@@ -87,10 +88,20 @@ exports.sflags_to_flags = sflags_to_flags = (s) ->
   res = 0
   for i in [0...s.length]
     c = s.charAt i
-    res |= sflags[c]
+    res |= SF[c]
   return res
 
 ##=======================================================================
+
+show_arg = (msg, V) ->
+  (V or
+     ((msg.type is type.SERVER) and (msg.dir is dir.INCOMING)) or
+     ((msg.type isnt type.SERVER) and (msg.dir is dir.OUTGOING)))
+        
+show_res = (msg, V) ->
+  (V or
+     ((msg.type is type.SERVER) and (msg.dir is dir.OUTGOING)) or
+     ((msg.type isnt type.SERVER) and (msg.dir is dir.INCOMING)))
 
 #
 # Make a simple hook that takes an incoming message, turns on/off some
@@ -100,6 +111,10 @@ exports.sflags_to_flags = sflags_to_flags = (s) ->
 exports.make_hook = (flgs, fn) ->
   sflags = flgs
   sflags = sflags_to_flags flgs if typeof flgs is 'string'
+  
+  # Usually don't copy the arg or res if it's in the other direction,
+  # but this can overpower that
+  V = sflags & F.VERBOSE
 
   return (msg) ->
     new_msg = {}
@@ -111,18 +126,13 @@ exports.make_hook = (flgs, fn) ->
       uck = key.toUpperCase()
       flag = F[uck]
 
-      # Usually don't copy the arg or res if it's in the other direction,
-      # but this can overpower that
-      V = sflags & F.VERBOSE
-      
       do_copy = if (sflags & flag) is 0 then false
-      else if key is "res" then (msg.dir is dir.OUTGOING or V)
-      else if key is "arg" then (msg.dir is dir.INCOMING or V)
+      else if key is "res" then show_res msg, V
+      else if key is "arg" then show_arg msg, V
       else true
 
       if do_copy
-        f2s = F2S[flag]
-        val = f2s val if (f2s = F2S[flag])?
+        val = f2s[val] if (f2s = F2S[flag])?
         new_msg[key] = val
         
     fn new_msg
@@ -133,14 +143,14 @@ exports.Message = class Message
   """A debug message --- a wrapper around a dictionary object, with
   a few additional methods."""
 
-  constructor : (@msg, @hook = null) ->
+  constructor : (@_msg, @hook = null) ->
 
   response : (error, result) ->
-    @msg.error = error
-    @msg.result = result
-    @msg.dir = if dir.OUTGOING then dir.INCOMING else dir.OUTGOING
+    @_msg.err = error
+    @_msg.res = result
+    @_msg.dir = if dir.OUTGOING then dir.INCOMING else dir.OUTGOING
 
-  msg : -> @msg
+  msg : -> @_msg
 
   call : -> @hook @msg()
 

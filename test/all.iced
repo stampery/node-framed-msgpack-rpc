@@ -2,11 +2,11 @@ fs = require 'fs'
 path = require 'path'
 colors = require 'colors'
 deep_equal = require 'deep-equal'
-{log,Logger,RobustTransport,Transport,Client} = require '../src/main'
+{debug,log,Logger,RobustTransport,Transport,Client} = require '../src/main'
 
 ##-----------------------------------------------------------------------
 
-argv = require('optimist').usage('Usage: $0 [-d]').argv
+argv = require('optimist').usage('Usage: $0 [-d] [ -t<string>]').argv
 
 ##-----------------------------------------------------------------------
 
@@ -36,6 +36,9 @@ class GlobalTester
   connect : (port, prog, cb, rtopts) ->
     err = null
     opts = { port, host : "-" }
+    if argv.t?
+      opts.debug_hook = debug.make_hook String(argv.t), (m) ->
+        console.log "TRACE-#{argv.t}: #{JSON.stringify m}"
     klass = if rtopts then RobustTransport else Transport
     x = new klass opts, rtopts
     await x.connect defer ok

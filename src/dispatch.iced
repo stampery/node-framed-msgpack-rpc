@@ -39,6 +39,10 @@ exports.Dispatch = class Dispatch extends Packetizer
 
   ##-----------------------------------------
 
+  set_debug_hook : (h) -> @_debug_hook = h
+ 
+  ##-----------------------------------------
+
   _dispatch : (msg) ->
 
     # We can escape from this, but it's not great...
@@ -113,10 +117,11 @@ exports.Dispatch = class Dispatch extends Packetizer
 
     if @_debug_hook
       type = if notify then 
-      debug_msg = new debug.Message {
-        method, seqid, arg,
+      debug_msg = new dbg.Message {
+        method, seqid,
+        arg : args,
         dir : dbg.constants.dir.OUTGOING,
-        remote : @remote()
+        remote : @remote(),
         type : dtype
       }
       @_debug_hook debug_msg.msg()
