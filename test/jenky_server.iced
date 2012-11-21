@@ -1,6 +1,9 @@
 {log,server,ReconnectTransport,Client} = require '../src/main'
 
 PORT = 8881
+
+# Since we're being forked, do this.  We shouldn't really
+# be doing this in "-d" mode to all.iced, but it's OK for now.
 log.set_default_level log.levels.WARN
 
 # this is a jenky server that crashes every time it does anything!
