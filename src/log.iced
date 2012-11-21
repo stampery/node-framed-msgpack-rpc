@@ -3,23 +3,37 @@
 # The standard logger for saying that things went wrong, or state changed,
 # inside the RPC system.  You can of course change this to be whatever you'd
 # like via the @log_obj member of the Transport class.
-# 
+#
+
+exports.levels = L =
+  NONE : 0
+  DEBUG : 1
+  INFO : 2
+  WARN : 3
+  ERROR : 4
+  FATAL : 5
+  TOP : 6
+
+default_level = L.INFO
+
+##=======================================================================
+
 exports.Logger = class Logger
-  constructor : ({@prefix, @remote}) ->
+  constructor : ({@prefix, @remote,@level}) ->
     @prefix = "RPC" unless @prefix
     @remote = "-" unless @remote
     @output_hook = (m) -> console.log m
+    @level = if @level? then @level else default_level
 
+  set_level : (l) -> @level = l
   set_remote : (r) -> @remote = r
   set_prefix : (p) -> @prefix = p
 
-  info : (m) ->  
-  warn : (m) ->  @_log m, "W"
-  error : (m) -> @_log m, "E"
-  fatal : (m) -> @_log m, "F"
-  debug : (m) -> @_log m, "D"
-
-  clone : -> new Logger { @prefix, @remote, @output_hook }
+  debug : (m) -> @_log m, "D" if @level <= L.DEBUG
+  info : (m) ->  @_log m, "I" if @level <= L.INFO
+  warn : (m) ->  @_log m, "W" if @level <= L.WARN
+  error : (m) -> @_log m, "E" if @level <= L.ERROR
+  fatal : (m) -> @_log m, "F" if @level <= L.FATAL
 
   _output : (m) -> console.log m
   
@@ -32,3 +46,17 @@ exports.Logger = class Logger
     ohook parts.join " "
     
 
+##=======================================================================
+ 
+default_logger_class = Logger
+
+##=======================================================================
+
+exports.set_default_level = (l) -> default_level = l
+exports.set_default_logger_class = (k) -> default_logger_class =  k
+
+##=======================================================================
+
+exports.new_default_logger = (d = {}) -> return new default_logger_class d
+
+##=======================================================================

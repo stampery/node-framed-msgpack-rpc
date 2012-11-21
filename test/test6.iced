@@ -41,7 +41,6 @@ exports.slow_warnings = (T, cb) ->
   await T.connect PORT, "P.1", defer(x, c), rtops
   
   if x
-    x.set_logger T.logger()
 
     arg =
       x : "simple stuff here"

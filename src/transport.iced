@@ -2,7 +2,7 @@
 net = require 'net'
 {Lock} = require './lock'
 {Dispatch} = require './dispatch'
-{Logger} = require './log'
+log = require './log'
 {Timer} = require './timer'
 
 ##=======================================================================
@@ -54,7 +54,7 @@ exports.TcpTransport = class TcpTransport extends Dispatch
     @_explicit_close = false
     
     @_remote_str = [ @host, @port].join ":"
-    @set_logger @log_obj or new Logger {} 
+    @set_logger @log_obj 
     
     @_lock = new Lock()
     @_generation = 1
@@ -84,6 +84,7 @@ exports.TcpTransport = class TcpTransport extends Dispatch
   ##-----------------------------------------
 
   set_logger : (o) ->
+    o = log.new_default_logger() unless o
     @log_obj = o
     @log_obj.set_remote @_remote_str
   

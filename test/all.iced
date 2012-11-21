@@ -3,7 +3,7 @@ fs = require 'fs'
 path = require 'path'
 colors = require 'colors'
 deep_equal = require 'deep-equal'
-{Logger,RobustTransport,Transport,Client} = require '../src/main'
+{log,Logger,RobustTransport,Transport,Client} = require '../src/main'
 
 argv = require('optimist').usage('Usage: $0 [-d]').argv
 
@@ -13,26 +13,23 @@ ARROW = "\u2192"
 
 ##-----------------------------------------------------------------------
 
-class VerboseTestLogger extends Logger
+
+class VLogger extends Logger
   
   @my_ohook : (m) -> console.log " #{ARROW} #{m}".yellow
   
-  info : (m) -> @_log m, "I",  VerboseTestLogger.my_ohook
-  warn : (m) -> @_log m, "W",  VerboseTestLogger.my_ohook
-  error : (m) -> @_log m, "E", VerboseTestLogger.my_ohook
+  info : (m) -> @_log m, "I",  VLogger.my_ohook
+  warn : (m) -> @_log m, "W",  VLogger.my_ohook
+  error : (m) -> @_log m, "E", VLogger.my_ohook
 
 ##-----------------------------------------------------------------------
 
-class QuietTestLogger extends Logger
-
-  _log : () -> null
-
-##-----------------------------------------------------------------------
+if argv.d
+  log.set_default_logger_class VLogger
+else
+  log.set_default_level log.levels.TOP
 
 class GlobalTester
-  logger : () ->
-    klass = if argv.d then VerboseTestLogger else QuietTestLogger
-    new klass {}
 
   connect : (port, prog, cb, rtopts) ->
     opts = { port, host : "-" }

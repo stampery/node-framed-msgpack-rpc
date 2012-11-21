@@ -12,9 +12,6 @@ rj = require 'random-json'
 ##=======================================================================
 
 class P_v1 extends server.Handler
-  constructor : (d) ->
-    d.transport.set_logger T_global.logger()
-    super d
     
   h_buggy : (arg, res) ->
     res.result arg
@@ -46,7 +43,6 @@ exports.init = (cb, gto) ->
     rtops = {}
     await gto.connect PORT, "P.1", defer(x, c), rtops
     if x
-      x.set_logger gto.logger()
       clix = x
       cli = c
     else

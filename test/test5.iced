@@ -24,7 +24,7 @@ exports.init = (cb) ->
 
 exports.reconnect = (T, cb) ->
   
-  x = new RobustTransport { port : PORT, host : "-", log_obj : T.logger() }
+  x = new RobustTransport { port : PORT, host : "-" }
   await x.connect defer ok
   
   if not ok
