@@ -140,12 +140,10 @@ exports.Dispatch = class Dispatch extends Packetizer
 
   ##-----------------------------------------
 
-  _dispatch_force_eof : () ->
-    @_warn "DFEOF"
+  _dispatch_reset : () ->
     inv = @_invocations
     @_invocations = {}
     for key,cb of inv
-      @_warn "-> DFEOF #{key}"
       cb "EOF from server", {}
    
   ##-----------------------------------------

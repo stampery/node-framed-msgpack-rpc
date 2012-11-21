@@ -132,7 +132,6 @@ exports.Packetizer = class Packetizer
       @_state = @FRAME
       # Call down one level in the class hierarchy to the dispatcher
       @_dispatch msg
-      @_warn "OK Message length=#{l}"
       @OK
     return ret
   
@@ -147,8 +146,7 @@ exports.Packetizer = class Packetizer
   ##-----------------------------------------
 
   # On error we need to flush this guy out.
-  _packetizer_clear : () ->
-    @_warn "Packetizer cleared out..."
+  _packetizer_reset : () ->
     @_state = @FRAME
     @_ring = new Ring()
     

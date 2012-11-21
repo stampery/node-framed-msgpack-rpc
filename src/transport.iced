@@ -21,8 +21,8 @@ class TcpStreamWrapper
     if (x = @_tcp_stream)?
       ret = true
       @_tcp_stream = null
-      @_parent._dispatch_force_eof()
-      @_parent._packetizer_clear()
+      @_parent._dispatch_reset()
+      @_parent._packetizer_reset()
       x.end()
     return ret
 
