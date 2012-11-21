@@ -24,7 +24,7 @@ exports.Reponse = class Reponse
 
 exports.Dispatch = class Dispatch extends Packetizer
 
-  REQUEST  : 0
+  INVOKE : 0
   RESPONSE : 1
   NOTIFY   : 2
 
@@ -46,7 +46,7 @@ exports.Dispatch = class Dispatch extends Packetizer
       @_warn "Bad input packet in dispatch"
     else
       switch (type = msg.shift())
-        when @REQUEST
+        when @INVOKE
           [seqid,method,param] = msg
           response = new Reponse @, seqid
           @_serve { method, param, response }
@@ -106,8 +106,8 @@ exports.Dispatch = class Dispatch extends Packetizer
       type = @NOTIFY
       dtype = dbg.constants.type.CLIENT_NOTIFY
     else
-      type = @REQUEST
-      dtype = dbg.constants.type.CLIENT_CALL
+      type = @INVOKE
+      dtype = dbg.constants.type.CLIENT_INVOKE
       
     msg = [ type, seqid, method, args ]
 

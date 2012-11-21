@@ -65,7 +65,7 @@ F2S[F.DIR][dir.OUTGOING] = "out";
 F2S[F.CLASS] = {};
 F2S[F.CLASS][type.SERVER] = "server";
 F2S[F.CLASS][type.CLIENT_NOTIFY] = "cli.notify";
-F2S[F.CLASS][type.CLIENT_CALL] = "cli.call";
+F2S[F.CLASS][type.CLIENT_INVOKE] = "cli.invoke";
 
 ##=======================================================================
 
