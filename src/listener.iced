@@ -27,7 +27,6 @@ exports.TcpListener = class TcpListener
   _got_new_connection : (c) ->
     # Call down to a subclass
     x = @make_new_transport c
-    x.activate_stream()
     @got_new_connection x
 
   ##-----------------------------------------

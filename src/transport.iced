@@ -7,11 +7,43 @@ net = require 'net'
 
 ##=======================================================================
 
+#
+# A shared wrapper object for which close is idempotent
+# 
+class TcpStreamWrapper
+  constructor : (@_tcp_stream, @_parent) ->
+    @_generation = @_parent.next_generation()
+    @_write_closed_warn = false
+
+  # Return true if we did the actual close, and false otherwise
+  close : ->
+    ret = false
+    if (x = @_tcp_stream)?
+      ret = true
+      @_tcp_stream = null
+      @_parent._dispatch_force_eof()
+      @_parent._packetizer_clear()
+      x.end()
+    return ret
+
+  write : (msg, enc) ->
+    if @_tcp_stream
+      @_tcp_stream.write msg, enc
+    else if not @_write_closed_warn
+      @_write_closed_warn = true
+      @_parent._warn "write on closed socket..."
+
+  stream : -> @_tcp_stream
+
+  is_connected : -> !! @_tcp_stream
+
+##=======================================================================
+
 exports.TcpTransport = class TcpTransport extends Dispatch
 
   ##-----------------------------------------
 
-  constructor : ({ @port, @host, @tcp_opts, @tcp_stream, @log_obj,
+  constructor : ({ @port, @host, @tcp_opts, tcp_stream, @log_obj,
                    @parent, @do_tcp_delay}) ->
     super
     
@@ -25,9 +57,26 @@ exports.TcpTransport = class TcpTransport extends Dispatch
     @set_logger @log_obj or new Logger {} 
     
     @_lock = new Lock()
-    @_write_closed_warn = false
     @_generation = 1
 
+    # We don't store the TCP stream directly, but rather, sadly,
+    # a **wrapper** around the TCP stream.  This is to make stream
+    # closes idempotent. The case we want to avoid is two closes
+    # on us (due to errors), but the second closing the reconnected
+    # stream, rather than the original stream.  This level of
+    # indirection solves this.
+    @_tcpw = null
+
+    # potentially set @_tcpw to be non-null
+    @_activate_stream tcp_stream if tcp_stream
+
+  ##-----------------------------------------
+
+  next_generation : () ->
+    ret = @_generation
+    @_generation++
+    return ret
+ 
   ##-----------------------------------------
 
   remote : () -> @_remote_str
@@ -45,12 +94,16 @@ exports.TcpTransport = class TcpTransport extends Dispatch
   _fatal : (e) -> @log_obj.fatal e
   _debug : (e) -> @log_obj.debug e
   _error : (e) -> @log_obj.error e
-    
+   
+  ##-----------------------------------------
+
+  is_connected : () -> @_tcpw?.is_connected()
+   
   ##-----------------------------------------
 
   connect : (cb) ->
     await @_lock.acquire defer()
-    if not @tcp_stream?
+    if not @is_connected()
       await @_connect_critical_section defer res
     else
       res = true
@@ -61,36 +114,30 @@ exports.TcpTransport = class TcpTransport extends Dispatch
 
   close : () ->
     @_explicit_close = true
-    @_close @_generation
+    if @_tcpw
+      @_tcpw.close()
+      @_tcpw = null
 
   ##-----------------------------------------
-  
-  _close : (g_wrapped) ->
-    g_curr = @_generation
-    @_generation++
-    @_dispatch_force_eof()
-    if (g_curr is g_wrapped) and @tcp_stream
-      @tcp_stream.end()
-      @tcp_stream = null
-   
-  ##-----------------------------------------
 
-  _handle_error : (e, g) ->
-    @_close g
+  _handle_error : (e, tcpw) ->
     @_error e
-    @_reconnect()
+    @_reconnect() if tcpw.close()
    
   ##-----------------------------------------
   
   _packetize_error : (err) ->
-    @_handle_error "In packetizer: #{err}", @_generation
+    # I think we'll always have the right TCP stream here
+    # if we grab the one in the this object.  A packetizer
+    # error will happen before any errors in the underlying
+    # stream
+    @_handle_error "In packetizer: #{err}", @_tcpw
     
   ##-----------------------------------------
 
-  _handle_close : (g) ->
-    @_info "EOF on transport (generation=#{g})" unless @_explicit_close
-    @_close g
-    @_reconnect()
+  _handle_close : (tcpw) ->
+    @_info "EOF on transport" unless @_explicit_close
+    @_reconnect() if tcpw.close()
    
   ##-----------------------------------------
 
@@ -100,13 +147,13 @@ exports.TcpTransport = class TcpTransport extends Dispatch
  
   ##-----------------------------------------
   
-  activate_stream : () ->
-    x = @tcp_stream
+  _activate_stream : (x) ->
 
     # The current generation needs to be wrapped into this hook;
     # this way we don't close the next generation of connection
     # in the case of a reconnect....
-    cg = @_generation
+    w = new TcpStreamWrapper x, @
+    @_tcpw = w
 
     #
     # MK 2012/12/20 -- Revisit me!
@@ -118,11 +165,9 @@ exports.TcpTransport = class TcpTransport extends Dispatch
     # So for now, we are going to ignore the 'end' and just act
     # on the 'close'.
     # 
-    x.on 'error', (err) => @_handle_error cg, err
-    x.on 'close', ()    => @_handle_close cg
+    x.on 'error', (err) => @_handle_error cg, w
+    x.on 'close', ()    => @_handle_close w
     x.on 'data',  (msg) => @packetize_data msg
-
-    @_write_closed_warn = false
 
   ##-----------------------------------------
   
@@ -148,9 +193,8 @@ exports.TcpTransport = class TcpTransport extends Dispatch
       when CLS then @_warn "connection closed during open"
 
     if ok
-      @tcp_stream = x
       # Now remap the event emitters
-      @activate_stream()
+      @_activate_stream x
 
     cb ok
 
@@ -158,11 +202,10 @@ exports.TcpTransport = class TcpTransport extends Dispatch
   # To fulfill the packetizer contract, the following...
   
   _raw_write : (msg, encoding) ->
-    if @tcp_stream
-      @tcp_stream.write msg, encoding
-    else if not @_write_closed_warn
-      @_write_closed_warn = true
-      @_warn "attempt to write to closed connection"
+    if not @_tcpw?
+      @_warn "write attempt with no active stream"
+    else
+      @_tcpw.write msg, encoding
  
   ##-----------------------------------------
 
@@ -214,7 +257,7 @@ exports.RobustTransport = class RobustTransport extends TcpTransport
     @_waiters = []
     for w in tmp
       @invoke w...
-   
+  
   ##-----------------------------------------
  
   _connect_loop : (re = false, cb) ->
@@ -222,15 +265,21 @@ exports.RobustTransport = class RobustTransport extends TcpTransport
     i = 0
     
     await @_lock.acquire defer()
-    
-    while not @tcp_stream and not @_explicit_close
+
+    go = true
+    while go
       i++
-      await setTimeout defer(), @reconnect_delay*1000
-      if not @_explicit_close
+      if @is_connected() or @_explicit_close
+        go = false
+      else
         @_info "#{prfx}connecting (attempt #{i})"
         await @_connect_critical_section defer ok
+        if not ok 
+          await setTimeout defer(), @reconnect_delay*1000
+        else
+          go = false
     
-    if @tcp_stream
+    if @is_connected()
       s = if i is 1 then "" else "s"
       @_warn "#{prfx}connected after #{i} attempt#{s}"
       @_flush_queue()
@@ -284,7 +333,7 @@ exports.RobustTransport = class RobustTransport extends TcpTransport
 
   invoke : (arg, cb) ->
     meth = @make_method arg.program, arg.method
-    if @tcp_stream
+    if @is_connected()
       if @_time_rpcs then @_timed_invoke arg, cb
       else                super arg, cb
     else if @_explicit_close

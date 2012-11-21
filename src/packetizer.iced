@@ -16,6 +16,10 @@ msgpack_frame_len = (buf) ->
 
 ##=======================================================================
 
+is_array = (a) -> (typeof a is 'object') and Array.isArray a
+
+##=======================================================================
+
 exports.Packetizer = class Packetizer
   """
   A packetizer that is used to read and write to an underlying stream
@@ -120,11 +124,15 @@ exports.Packetizer = class Packetizer
     else if not (msg = unpack b)?
       @_packetize_error "bad encoding found in data/payload; len=#{l}"
       @ERR
+    else if not is_array msg
+      @_packetize_error "non-array found in data stream: #{JSON.stringify msg}"
+      @ERR
     else
       @_ring.consume l
       @_state = @FRAME
       # Call down one level in the class hierarchy to the dispatcher
       @_dispatch msg
+      @_warn "OK Message length=#{l}"
       @OK
     return ret
   
@@ -136,4 +144,12 @@ exports.Packetizer = class Packetizer
     while go is @OK
       go = if @_state is @FRAME then @_get_frame() else @_get_msg()
      
+  ##-----------------------------------------
+
+  # On error we need to flush this guy out.
+  _packetizer_clear : () ->
+    @_warn "Packetizer cleared out..."
+    @_state = @FRAME
+    @_ring = new Ring()
+    
 ##=======================================================================
