@@ -33,9 +33,9 @@ class TcpStreamWrapper
       @_write_closed_warn = true
       @_parent._warn "write on closed socket..."
 
-  stream : -> @_tcp_stream
-
-  is_connected : -> !! @_tcp_stream
+  stream         : -> @_tcp_stream
+  is_connected   : -> !! @_tcp_stream
+  get_generation : -> @_generation
 
 ##=======================================================================
 
@@ -79,6 +79,10 @@ exports.TcpTransport = class TcpTransport extends Dispatch
  
   ##-----------------------------------------
 
+  get_generation : () -> if @_tcpw then @_tcpw.get_generation() else -1 
+ 
+  ##-----------------------------------------
+
   remote : () -> @_remote_str
    
   ##-----------------------------------------
@@ -110,6 +114,7 @@ exports.TcpTransport = class TcpTransport extends Dispatch
       res = true
     @_lock.release()
     cb res if cb
+    @_reconnect() unless res
 
   ##-----------------------------------------
 

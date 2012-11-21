@@ -19,7 +19,7 @@ default_level = L.INFO
 ##=======================================================================
 
 exports.Logger = class Logger
-  constructor : ({@prefix, @remote,@level}) ->
+  constructor : ({@prefix, @remote, @level}) ->
     @prefix = "RPC" unless @prefix
     @remote = "-" unless @remote
     @output_hook = (m) -> console.log m
