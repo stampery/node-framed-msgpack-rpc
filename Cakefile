@@ -27,3 +27,7 @@ clearLibJs = (cb) ->
 task 'test', "run the test suite", (cb) ->
   await runIced [ "test/all.iced"], defer()
   cb() if typeof cb is 'function'
+
+task 'vtest', "run the test suite, w/ verbosity", (cb) ->
+  await runIced [ "test/all.iced", '-d'], defer()
+  cb() if typeof cb is 'function'

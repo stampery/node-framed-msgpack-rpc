@@ -5,30 +5,54 @@ colors = require 'colors'
 deep_equal = require 'deep-equal'
 {Logger,RobustTransport,Transport,Client} = require '../src/main'
 
+argv = require('optimist').usage('Usage: $0 [-d]').argv
+
 CHECK = "\u2714"
 FUUUU = "\u2716"
 ARROW = "\u2192"
 
 ##-----------------------------------------------------------------------
 
-
-class TestLogger extends Logger
+class VerboseTestLogger extends Logger
   
   @my_ohook : (m) -> console.log " #{ARROW} #{m}".yellow
   
-  warn : (m) -> @_log m, "W", TestLogger.my_ohook
-  error : (m) -> @_log m, "E", TestLogger.my_ohook
+  info : (m) -> @_log m, "I",  VerboseTestLogger.my_ohook
+  warn : (m) -> @_log m, "W",  VerboseTestLogger.my_ohook
+  error : (m) -> @_log m, "E", VerboseTestLogger.my_ohook
 
 ##-----------------------------------------------------------------------
 
-class Tester
-  constructor : ->
-    @_ok = true
-    @_logger = null
+class QuietTestLogger extends Logger
 
+  _log : () -> null
+
+##-----------------------------------------------------------------------
+
+class GlobalTester
   logger : () ->
-    @_logger = new TestLogger {} if not @_logger?
-    @_logger
+    klass = if argv.d then VerboseTestLogger else QuietTestLogger
+    new klass {}
+
+  connect : (port, prog, cb, rtopts) ->
+    opts = { port, host : "-" }
+    klass = if rtopts then RobustTransport else Transport
+    x = new klass opts, rtopts
+    await x.connect defer ok
+    if not ok
+      @error "Failed to connect in TcpTransport..."
+      x = null
+    else
+      c = new Client x, prog
+    cb x, c
+
+##-----------------------------------------------------------------------
+
+class TestCase
+  constructor : (@_global) ->
+    @_ok = true
+
+  logger : () -> @_global.logger()
     
   search : (s, re, msg) ->
     @assert (s? and s.search(re) >= 0), msg
@@ -60,17 +84,8 @@ class Tester
   is_ok : () -> @_ok
 
   connect : (port, prog, cb, rtopts) ->
-    opts = { port, host : "-" }
-    klass = if rtopts then RobustTransport else Transport
-    x = new klass opts, rtopts
-    await x.connect defer ok
-    if not ok
-      @error "Failed to connect in TcpTransport..."
-      x = null
-    else
-      c = new Client x, prog
-    cb x, c
-
+    @_global.connect port, prog, cb, rtopts
+   
 ##-----------------------------------------------------------------------
 
 class Runner
@@ -85,6 +100,7 @@ class Runner
     @_rc = 0
     @_n_files = 0
     @_n_good_files = 0
+    @_global_tester = new GlobalTester
 
   ##-----------------------------------------
   
@@ -117,9 +133,14 @@ class Runner
     cb()
 
   ##-----------------------------------------
+
+  create_tester : () -> new TestCase @_global_tester
+   
+  ##-----------------------------------------
   
   run_code : (f, code, cb) ->
-    await code.init defer err if code.init?
+    if code.init?
+      await code.init defer(err), @_global_tester
     destroy = code.destroy
     delete code["init"]
     delete code["destroy"]
@@ -130,7 +151,7 @@ class Runner
       @_n_good_files++
       for k,v of code
         @_tests++
-        T = new Tester
+        T = @create_tester()
         await v T, defer err
         if err
           @err "In #{f}/#{k}: #{err}"
@@ -139,7 +160,7 @@ class Runner
           console.log "#{CHECK} #{f}: #{k}".green
         else
           console.log "#{FUUUU} #{f}: #{k}".bold.red
-    await destroy defer() if destroy
+    await destroy defer(), @_global_tester if destroy
     cb()
 
   ##-----------------------------------------

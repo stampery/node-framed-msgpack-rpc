@@ -19,7 +19,7 @@ exports.Logger = class Logger
   fatal : (m) -> @_log m, "F"
   debug : (m) -> @_log m, "D"
 
-  clone : -> new Logger { @prefix }
+  clone : -> new Logger { @prefix, @remote, @output_hook }
 
   _output : (m) -> console.log m
   

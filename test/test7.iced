@@ -12,15 +12,29 @@ rj = require 'random-json'
 ##=======================================================================
 
 class P_v1 extends server.Handler
-  h_reflect : (arg, res) ->
+  constructor : (d) ->
+    d.transport.set_logger T_global.logger()
+    super d
+    
+  h_buggy : (arg, res) ->
     res.result arg
     # Now, generate some random junk in the buffer, and then send it down
     # the pipe!
     @transport._raw_write new Buffer [3...10]
+  h_good : (arg, res) ->
+    res.result arg
 
 ##=======================================================================
 
-exports.init = (cb) ->
+cli = null
+clix = null
+T_global = null
+
+##=======================================================================
+
+exports.init = (cb, gto) ->
+
+  T_global = gto
   
   s = new server.ContextualServer 
     port : PORT
@@ -28,35 +42,53 @@ exports.init = (cb) ->
       "P.1" : P_v1
         
   await s.listen defer err
+  if not err
+    rtops = {}
+    await gto.connect PORT, "P.1", defer(x, c), rtops
+    if x
+      x.set_logger gto.logger()
+      clix = x
+      cli = c
+    else
+      err = "failed to connect client"
+      
   cb err
 
 ##=======================================================================
 
-exports.reconnect_after_error = (T, cb) ->
+exports.reconnect_after_server_error = (T, cb) ->
 
-  rtops = {}
-
-  await T.connect PORT, "P.1", defer(x, c), rtops
-  
-  if x
-    x.set_logger T.logger()
-
-    arg =
-      x : "simple stuff here"
-      v : [0..100]
+  arg =
+    x : "simple stuff here"
+    v : [0..100]
       
-    n = 4
-    for i in [0...n]
-      await T.test_rpc c, "reflect", arg, arg, defer()
-      await setTimeout defer(), 100
+  n = 4
+  for i in [0...n]
+    await T.test_rpc cli, "buggy", arg, arg, defer()
+    await setTimeout defer(), 10
 
-    x.close()
+  cb()
+
+##=======================================================================
+
+exports.reconnect_after_client_error = (T, cb) ->
+  arg =
+    x : "simple stuff here"
+    v : [0..100]
+  n = 4
+  for i in [0...n]
+    await T.test_rpc cli, "good", arg, arg, defer()
+    # Poop on ourselves...
+    clix._raw_write new Buffer [3...10]
+    
+    await setTimeout defer(), 10
 
   cb()
 
 ##=======================================================================
 
 exports.destroy = (cb) ->
+  clix.close()
   await s.close defer()
   s = null
   cb()
