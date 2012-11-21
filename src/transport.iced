@@ -44,7 +44,7 @@ exports.TcpTransport = class TcpTransport extends Dispatch
   ##-----------------------------------------
 
   constructor : ({ @port, @host, @tcp_opts, tcp_stream, @log_obj,
-                   @parent, @do_tcp_delay}) ->
+                   @parent, @do_tcp_delay, @hooks}) ->
     super
     
     @host = "localhost" if not @host or @host is "-"
@@ -121,9 +121,16 @@ exports.TcpTransport = class TcpTransport extends Dispatch
 
   ##-----------------------------------------
 
+  _close : (tcpw) ->
+    # If an optional close hook was specified, call it here...
+    @hooks?.eof?()
+    @_reconnect() if tcpw.close()
+
+  ##-----------------------------------------
+
   _handle_error : (e, tcpw) ->
     @_error e
-    @_reconnect() if tcpw.close()
+    @_close tcpw
    
   ##-----------------------------------------
   
@@ -138,7 +145,7 @@ exports.TcpTransport = class TcpTransport extends Dispatch
 
   _handle_close : (tcpw) ->
     @_info "EOF on transport" unless @_explicit_close
-    @_reconnect() if tcpw.close()
+    @_close tcpw
    
   ##-----------------------------------------
 
@@ -149,6 +156,11 @@ exports.TcpTransport = class TcpTransport extends Dispatch
   ##-----------------------------------------
   
   _activate_stream : (x) ->
+
+    @_info "connection established"
+
+    # If optional hooks were specified, call them here
+    @hooks?.connected?()
 
     # The current generation needs to be wrapped into this hook;
     # this way we don't close the next generation of connection

@@ -1,6 +1,7 @@
-{server,ReconnectTransport,Client} = require '../src/main'
+{log,server,ReconnectTransport,Client} = require '../src/main'
 
 PORT = 8881
+log.set_default_level log.levels.WARN
 
 # this is a jenky server that crashes every time it does anything!
 # useful for testing the reconnecting client...
