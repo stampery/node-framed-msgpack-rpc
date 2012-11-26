@@ -1,18 +1,17 @@
 maxtaco/node-fast-msgpack-rpc
 ========================
 
-node-fast-msgpack-rpc is an implementation of the
+node-framed-msgpack-rpc is an implementation of the
 [Msgpack-RPC](http://redmine.msgpack.org/projects/msgpack/wiki/RPCDesign)
 protocol specification for node.js.  Msgpack-RPC is built ontop of the
 very fast [MessagePack](http://msgpack.org) serialization format. This
 implementation supports tcp and unix socket transports.
 
-This is a "fast" version of Msgpack-RPC.  The big difference here is
+This is a "framed" version of Msgpack-RPC.  The big difference here is
 that the length of the packet is prepended to each packet, meaning we
 don't need to keep iteratively decoding the packet over and over
 again.  Seems weird they left this out.  This protocol is not
-compatible with the existing Msgpack, but this module has the same
-API.
+compatible with the existing Msgpack.
 
 
 Simple Usage
@@ -22,7 +21,7 @@ If you don't care too much about keeping custom per-connection state, it's
 easy to make a simple RPC server:
 
 ```javascript
-var rpc = require('fast-msgpack-rpc');
+var rpc = require('framed-msgpack-rpc');
 var srv = rpc.createServer({
    "myprog.v1" : {
       add : function(arg, response) {
