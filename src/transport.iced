@@ -28,7 +28,9 @@ class TcpStreamWrapper
 
   write : (msg, enc) ->
     if @_tcp_stream
-      @_tcp_stream.write msg, enc
+      all = @_tcp_stream.write msg, enc
+      if not all
+        @_parent._warn "msg size=#{msg.length} not fully written..."
     else if not @_write_closed_warn
       @_write_closed_warn = true
       @_parent._warn "write on closed socket..."

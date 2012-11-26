@@ -9,6 +9,7 @@ exports.dispatch  = require './dispatch'
 exports.listener  = require './listener'
 
 exports.Server = server.Server
+exports.SimpleServer = server.SimpleServer
 exports.Client = client.Client
 exports.Transport = transport.TcpTransport
 exports.RobustTransport = transport.RobustTransport

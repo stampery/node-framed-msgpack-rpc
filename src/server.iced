@@ -3,6 +3,18 @@
 
 ##=======================================================================
 
+# Collect all methods that start with "h_"s.  These are handler
+# hooks and will automatically assume a program with this function
+exports.collect_hooks = collect_hooks =  (proto) ->
+  re = /^h_(.*)$/
+  hooks = {}
+  for k,v of proto
+    if (m = k.match re)?
+      hooks[m[1]] = v
+  return hooks
+    
+##=======================================================================
+
 exports.Server = class Server extends TcpListener
   """This server is connection-centric. When the handlers of the
   passed programs are invoked, the 'this' object to the handler will
@@ -28,6 +40,24 @@ exports.Server = class Server extends TcpListener
 
 ##=======================================================================
 
+exports.SimpleServer = class SimpleServer extends TcpListener
+
+  constructor : (d) ->
+    super d
+
+  got_new_connection : (c) ->
+    @_hooks = collect_hooks @
+    c.add_program @get_program_name(), @_hooks
+
+  get_program_name : () -> throw new Error "unimplemented!"
+
+  make_new_transport : (c) ->
+    x = super c
+    x.get_handler_this = (m) => @
+    return x
+
+##=======================================================================
+
 #
 # Your class can be much cooler, maybe this is where you put all of your
 # application logic.
@@ -44,13 +74,7 @@ exports.Handler = class Handler
 
   # Collect all methods that start with "h_"s.  These are handler
   # hooks and will automatically assume a program with this function
-  @collect_hooks : () ->
-    re = /^h_(.*)$/
-    hooks = {}
-    for k,v of @prototype
-      if (m = k.match re)?
-        hooks[m[1]] = v
-    return hooks
+  @collect_hooks : () -> collect_hooks @prototype
 
 ##=======================================================================
 
