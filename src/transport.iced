@@ -28,9 +28,7 @@ class TcpStreamWrapper
 
   write : (msg, enc) ->
     if @_tcp_stream
-      all = @_tcp_stream.write msg, enc
-      if not all
-        @_parent._warn "msg size=#{msg.length} not fully written..."
+      @_tcp_stream.write msg, enc
     else if not @_write_closed_warn
       @_write_closed_warn = true
       @_parent._warn "write on closed socket..."
@@ -74,6 +72,10 @@ exports.TcpTransport = class TcpTransport extends Dispatch
     # potentially set @_tcpw to be non-null
     @_activate_stream tcp_stream if tcp_stream
 
+  ##-----------------------------------------
+
+  set_debug_hook : (h) -> @_debug_hook = h
+   
   ##-----------------------------------------
 
   next_generation : () ->
@@ -155,6 +157,10 @@ exports.TcpTransport = class TcpTransport extends Dispatch
   _handle_close : (tcpw) ->
     @_info "EOF on transport" unless @_explicit_close
     @_close tcpw
+    
+    # for TCP connections that are children of TcpListeners,
+    # we close the connection here and disassociate
+    @parent.close_child @ if @parent
    
   ##-----------------------------------------
 

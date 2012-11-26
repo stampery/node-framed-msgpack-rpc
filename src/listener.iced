@@ -1,6 +1,7 @@
 
 net = require 'net'
 {TcpTransport} = require './transport'
+{List} = require './list'
 
 ##=======================================================================
 
@@ -10,18 +11,39 @@ exports.TcpListener = class TcpListener
 
   constructor : ({@port, @host, @TransportClass}) ->
     @TransportClass = TcpTransport unless @TransportClass
+    @_children = new List
 
   ##-----------------------------------------
 
   # Feel free to change this for your needs (if you want to wrap a connection
   # with something else)...
   make_new_transport : (c) ->
-    new @TransportClass
+    x = new @TransportClass
       tcp_stream : c
       host : c.remoteAddress
       port : c.remotePort
       parent : @
+      log_obj : @make_new_log_object c
+    @_children.push x
+    return x
 
+  ##-----------------------------------------
+  
+  make_new_log_object : (c) -> null
+    
+  ##-----------------------------------------
+
+  walk_children : (fn) -> @_children.walk fn
+ 
+  ##-----------------------------------------
+
+  close_child : (c) -> @_children.remove c
+   
+  ##-----------------------------------------
+
+  set_port : (p) ->
+    @port = p
+   
   ##-----------------------------------------
 
   _got_new_connection : (c) ->
