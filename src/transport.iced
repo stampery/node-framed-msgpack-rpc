@@ -37,6 +37,9 @@ class TcpStreamWrapper
   is_connected   : -> !! @_tcp_stream
   get_generation : -> @_generation
 
+  remote : () ->
+    if @_tcp_stream then @_tcp_stream.remoteAddress else null
+
 ##=======================================================================
 
 exports.TcpTransport = class TcpTransport extends Dispatch
@@ -89,8 +92,13 @@ exports.TcpTransport = class TcpTransport extends Dispatch
  
   ##-----------------------------------------
 
-  remote : () -> @_remote_str
+  remote : () ->
+    if @_tcpw? then @_tcpw.remote_address() else null
    
+  ##-----------------------------------------
+
+  remote_address : () -> @host
+ 
   ##-----------------------------------------
 
   set_logger : (o) ->
@@ -259,6 +267,7 @@ exports.RobustTransport = class RobustTransport extends TcpTransport
   #    error_threshhold -- if a call *is taking* more than this number of
   #       seconds, we will make an error output while the RPC is outstanding,
   #       and then make an error after we know how long it took.
+  #
   #      
   constructor : (sd, d = {}) ->
     super sd
@@ -349,9 +358,9 @@ exports.RobustTransport = class RobustTransport extends TcpTransport
 
     dur = tm.stop()
 
-    m =  if dur >= et then @_error
-    else if dur >= wt then @_warn
-    else                   null
+    m =  if et and dur >= et then @_error
+    else if wt and dur >= wt then @_warn
+    else                     null
 
     m.call @, "RPC call to '#{meth}' finished in #{dur/1000}s" if m
 
