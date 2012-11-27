@@ -92,12 +92,9 @@ exports.TcpTransport = class TcpTransport extends Dispatch
  
   ##-----------------------------------------
 
-  remote : () ->
+  remote_address : () ->
     if @_tcpw? then @_tcpw.remote_address() else null
-   
-  ##-----------------------------------------
-
-  remote_address : () -> @host
+  remote : () -> @remote_address()
  
   ##-----------------------------------------
 

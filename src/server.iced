@@ -44,12 +44,16 @@ exports.SimpleServer = class SimpleServer extends TcpListener
 
   constructor : (d) ->
     super d
+    @_program = d.program
 
   got_new_connection : (c) ->
     @_hooks = collect_hooks @
     c.add_program @get_program_name(), @_hooks
 
-  get_program_name : () -> throw new Error "unimplemented!"
+  get_program_name : () ->
+    r = @_program
+    throw new Error "No 'program' given" unless r?
+    return r
 
   make_new_transport : (c) ->
     x = super c
