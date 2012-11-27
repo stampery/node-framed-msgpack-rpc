@@ -37,7 +37,7 @@ class TcpStreamWrapper
   is_connected   : -> !! @_tcp_stream
   get_generation : -> @_generation
 
-  remote : () ->
+  remote_address : () ->
     if @_tcp_stream then @_tcp_stream.remoteAddress else null
 
 ##=======================================================================
@@ -92,8 +92,7 @@ exports.TcpTransport = class TcpTransport extends Dispatch
  
   ##-----------------------------------------
 
-  remote_address : () ->
-    if @_tcpw? then @_tcpw.remote_address() else null
+  remote_address : () -> if @_tcpw? then @_tcpw.remote_address() else null
   remote : () -> @remote_address()
  
   ##-----------------------------------------
