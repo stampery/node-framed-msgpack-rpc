@@ -1,17 +1,22 @@
-maxtaco/node-fast-msgpack-rpc
+maxtaco/node-framed-msgpack-rpc
 ========================
 
-node-framed-msgpack-rpc is an implementation of the
+`framed-msgpack-rpc` is a variation of the
 [Msgpack-RPC](http://redmine.msgpack.org/projects/msgpack/wiki/RPCDesign)
-protocol specification for node.js.  Msgpack-RPC is built ontop of the
-very fast [MessagePack](http://msgpack.org) serialization format. This
-implementation supports tcp and unix socket transports.
+protocol specification for node.js.  Msgpack-RPC communicates
+JSON-like objects, that are efficiently encodede and decoded with the
+[MessagePack](http://msgpack.org) serialization format. This
+implementation supports TCP transports only at the current time.
 
-This is a "framed" version of Msgpack-RPC.  The big difference here is
-that the length of the packet is prepended to each packet, meaning we
-don't need to keep iteratively decoding the packet over and over
-again.  Seems weird they left this out.  This protocol is not
-compatible with the existing Msgpack.
+"Framed" Msgpack-RPC differs from standard Msgpack-RPC in a small way:
+the encoding of the length of the packet is prepended to each
+packet. This way, receivers can efficiently buffer data until a full
+packet is available to decode. In an event-based context like node.js,
+framing simplifies implementation, and yields a faster decoder,
+espeically for very large messages.
+
+Due to framing, this protocol is not compatible with existing
+Msgpack-RPC systems.
 
 
 Simple Usage
