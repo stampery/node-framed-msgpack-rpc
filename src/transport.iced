@@ -4,6 +4,7 @@ net = require 'net'
 {Dispatch} = require './dispatch'
 log = require './log'
 {Timer} = require './timer'
+iced = require './iced'
 
 ##=======================================================================
 

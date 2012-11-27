@@ -1,6 +1,7 @@
 
 {Packetizer} = require './packetizer'
 dbg = require './debug'
+iced = require './iced'
 
 ##=======================================================================
 
