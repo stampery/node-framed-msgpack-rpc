@@ -1,10 +1,9 @@
-
 net = require 'net'
 {Lock} = require './lock'
 {Dispatch} = require './dispatch'
 log = require './log'
 {Timer} = require './timer'
-iced = require './iced'
+iced = require('./iced').runtime
 
 ##=======================================================================
 

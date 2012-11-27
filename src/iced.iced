@@ -1,2 +1,2 @@
 
-module.exports = require('iced-coffee-script').iced
+exports.runtime = require('iced-coffee-script').iced

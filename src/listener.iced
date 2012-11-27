@@ -2,7 +2,8 @@
 net = require 'net'
 {TcpTransport} = require './transport'
 {List} = require './list'
-iced = require './iced'
+
+iced = require('./iced').runtime
 
 ##=======================================================================
 
