@@ -460,7 +460,7 @@ await s.listen defer err
 console.log "Error: #{err}" if err?
 ```
 
-This code construct a `server.ContextualServer` with a `classes`
+This code constructs a `server.ContextualServer` with a `classes`
 object that maps program names to classes. Whenever a new connection
 is established in the above example, a new `Prog1` object and a new
 `Prog2` object is created.  The former will handle all RPCs to
