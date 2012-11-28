@@ -1,5 +1,4 @@
-maxtaco/node-framed-msgpack-rpc
-========================
+# Framed Msgpack RPC
 
 `framed-msgpack-rpc` (FMPRPC) is an RPC system for node.js.  It allows
 clients to call remote procedures on servers.  An RPC consists of: (1)
@@ -31,8 +30,7 @@ Due to framing, this protocol is not compatible with existing
 Msgpack-RPC systems.  This implementation supports TCP transports only
 at the current time.
 
-Simple Use
-------------
+## Simple Use
 
 The most simple way to write a server is with the `SimpleServer`
 class as below:
@@ -96,21 +94,27 @@ else
     x.close()
 ```
 
-Advanced Usage
---------------
-(documentation to come)
+## Installation
 
-Installation
-------------
+It should work to just install with npm:
+   
+   npm install -g framed-msgpack-rpc
 
-First you will need to install the [msgpack2](http://github.com/JulesAU/node-msgpack) add-on
-
-To install node-msgpack-rpc with npm:
+If you install by hand, you will need to install the one dependency,
+which is the [Msgpack C bindings](http://github.com/JulesAU/node-msgpack),
+available as `msgpack2` on npm:
 
     npm install -g msgpack2
 
 
-Debug and Tracing Hooks
------------------------
+## Full Documentation
 
-(documentation to come)
+### Transports
+
+### Clients
+
+### Servers
+
+### Logging Hooks
+
+### Debug Hooks
