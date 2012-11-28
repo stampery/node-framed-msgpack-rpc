@@ -507,10 +507,20 @@ s.walk_children (function(ch) {});
 
 ### Logging Hooks
 
+To come. See [log.iced](https://github.com/maxtaco/node-framed-msgpack-rpc/blob/master/src/log.iced) for details.
+
 ### Debug Hooks
+
+To come. See [debug.iced](https://github.com/maxtaco/node-framed-msgpack-rpc/blob/master/src/debug.iced) for details.
+
 
 ## Internals
 
 ### Packetizer
 
+To come. See [packetizer.iced](https://github.com/maxtaco/node-framed-msgpack-rpc/blob/master/src/packetizer.iced) for details.
+
 ### Dispatch
+
+To come. See [dispatch.iced](https://github.com/maxtaco/node-framed-msgpack-rpc/blob/master/src/dispatch.iced) for details.
+
