@@ -98,7 +98,7 @@ else
 
 It should work to just install with npm:
    
-   npm install -g framed-msgpack-rpc
+    npm install -g framed-msgpack-rpc
 
 If you install by hand, you will need to install the one dependency,
 which is the [Msgpack C bindings](http://github.com/JulesAU/node-msgpack),
