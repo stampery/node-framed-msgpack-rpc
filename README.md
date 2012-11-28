@@ -32,7 +32,7 @@ at the current time.
 
 ## Simple Use
 
-The most simple way to write a server is with the `SimpleServer`
+The simplest way to write a server is with the `SimpleServer`
 class as below:
 
 ```javascript
