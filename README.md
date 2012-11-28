@@ -203,6 +203,36 @@ via the logger object, and an `info` is issued when a connection succeeds.
 Also, if a `hooks.connected` was passed, it will be called on a successful
 connection, both the first time, and after any subsequent reconnect.
 
+#### transport.Transport.remote_address
+
+```javascript
+var ip = x.remote_address();
+```
+
+Get the IP address of the remote side of the connection.  Note that this
+can change for a RobustTransport, if the DNS resolution for the given
+hostname was updated and the connection was reestablished.  Will
+return a string in dotted-quad notation.
+
+#### transport.Transport.get_generation
+
+```javascript
+var g = x.get_generation()
+```
+
+Get the generation number of this stream connection.  In the case of a 
+regular Transport, it's always going to be 1.  In the case of a RobustTransport,
+this number is incremented every time the connection is reestablished.
+
+#### transport.Transport.set_debug_hook
+
+```javascript
+x.set_debug_hook(function(m) {})
+```
+
+Report that an RPC call was made or answered, either on the server or 
+client. See *Debugging* below for more details.
+
 ### Clients
 
 ### Servers
