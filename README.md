@@ -7,7 +7,7 @@ a simple string name; (2) an argument that is a single JSON object;
 objects can be arrays, or dictionaries, so arguments and return values
 can be complex and interesting.
 
-FMRPC is a variant of the
+FMPRPC is a variant of the
 [Msgpack-RPC](http://redmine.msgpack.org/projects/msgpack/wiki/RPCDesign)
 protocol specification for node.js.  Msgpack-RPC communicates
 binary JSON objects that are efficiently encoded and decoded with the
@@ -30,9 +30,9 @@ Due to framing, this protocol is not compatible with existing
 Msgpack-RPC systems.  This implementation supports TCP transports only
 at the current time.
 
-## Simple Use
+## Example
 
-The simplest way to write a server is with the `SimpleServer`
+The simplest way to write a server is with the `Server`
 class as below:
 
 ```javascript
@@ -110,11 +110,11 @@ available as `msgpack2` on npm:
 
 If you are building real applications, it's good to look deeper than
 the simple API introduced above. The full library is based on an
-abstraction called an FMRPC *Transport*.  This class represents a
-stream of FMRPC packets.  Clients and servers are built on top of
+abstraction called an FMPRPC *Transport*.  This class represents a
+stream of FMPRPC packets.  Clients and servers are built on top of
 these streams, but not in one-to-one correspondence.  That is, several
 clients and several servers can share the same Transport object. Thus,
-FMRPC supports multiplexing of many logically separated
+FMPRPC supports multiplexing of many logically separated
 application-level streams over the same underlying TCP stream.
 
 ### Transports
@@ -422,15 +422,14 @@ Here's an example:
 
 ```coffeescript
 class MyServer extends server.SimpleServer
+
   constructor : (d) ->
-    super s
+    super d 
     @set_program_name "myprog.1"
-  h_reflect : (arg, res, x) ->
-    res.result arg
-  h_null : (arg, res, x) ->
-    res.result null
-  h_add : (arg, res, x) ->
-    res.result { sum : arg.x + arg.y }
+
+  h_reflect : (arg, res, x) -> res.result arg
+  h_null    : (arg, res, x) -> res.result null
+  h_add     : (arg, res, x) -> res.result { sum : arg.x + arg.y }
 ```
 
 Most methods below are good for both `SimpleServer` and `Server`.
