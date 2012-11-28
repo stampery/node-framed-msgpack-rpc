@@ -50,6 +50,9 @@ exports.SimpleServer = class SimpleServer extends Listener
     @_hooks = collect_hooks @
     c.add_program @get_program_name(), @_hooks
 
+  set_program_name : (p) ->
+    @_program = p
+
   get_program_name : () ->
     r = @_program
     throw new Error "No 'program' given" unless r?

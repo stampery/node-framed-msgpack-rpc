@@ -384,6 +384,67 @@ For `opts`, the fields are:
 * `log_obj` - A log object to log errors, and also to assign to 
   (via `make_child`) to child connections. Use the default log class
   (which logs to `console.log`) if unspecified.
+* `programs` - Programs to support, following this JSON schema:
+
+```javascript
+{
+    prog_1 : {
+        proc_1 : function (arg, res, x) { /* ... */ },
+        proc_2 : function (arg, res, x) { /* ... */ },
+        /* etc ... */
+    },
+    prog_2 : {
+        proc_1 : function (arg, res, x) { /* ... */ }
+    }
+}
+```
+
+Each hook in the object is called once per RPC.  The `arg` argument is
+the argument specified by the remote client.  The `res` argument is
+what the hook should call to send its reply to the client (by calling
+`res.result(some_object)`).  A server can also reject the RPC via
+`res.error(some_error_string)`).  The final argument, `x`, is the
+transport over which the RPC came in to the server.  For instance, the
+server can call `x.remote_address()` to figure out who the remote
+client is.
+
+#### server.SimpleServer
+
+A `SimpleServer` behaves like a `Server` but is simplified in some
+ways.  First off, it only handles one program, which is typically
+set on object construction.  Second off, it depends on inheritance;
+I've used CoffeeScript here, but you can use hand-rolled JavaScript
+style inheritance too. Finally, it infers your method hooks: on
+construction, it iterators over all methods in the current object,
+and infers that a hook of the form `h_foo` handles the RPC `foo`.
+
+Here's an example:
+
+```coffeescript
+class MyServer extends server.SimpleServer
+  constructor : (d) ->
+    super s
+    @set_program_name "myprog.1"
+  h_reflect : (arg, res, x) ->
+    res.result arg
+  h_null : (arg, res, x) ->
+    res.result null
+  h_add : (arg, res, x) ->
+    res.result { sum : arg.x + arg.y }
+```
+
+Most methods below are good for both `SimpleServer` and `Server`.
+The former has a few extra; see the code in [server.iced](https://github.com/maxtaco/node-framed-msgpack-rpc/blob/master/src/server.iced).
+
+#### server.ContextualServer
+
+Construct a `server.ContextualServer` which a `programs` objects that
+maps program names to classes. When a new connection is made, one
+object is made for each program in that dictionary, and then that new
+"context" object becomes the `this` object for RPCs on that program on
+that connection.  It's not quite so crazy when you see it in action;
+see the code in
+[server.iced](https://github.com/maxtaco/node-framed-msgpack-rpc/blob/master/src/server.iced).
 
 #### server.Server.listen
 
@@ -423,7 +484,7 @@ Walk the list of children, calling the specified function on each
 child connection in the list:
 
 ```javascript
-s.walk_child(function(ch) {});
+s.walk_children (function(ch) {});
 ```
 
 ### Logging Hooks
