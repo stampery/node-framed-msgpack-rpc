@@ -122,7 +122,6 @@ application-level streams over the same underlying TCP stream.
 The transport mechanics are available via the submodule `transport`:
 
 ```javascript
-
 var transport = require('fast-msgpack-rpc').transport;
 ```
 
@@ -136,7 +135,29 @@ is no plan for UDP support right now.
 
 #### transport.Transport
 
+`var x = new transport.Transport(opts);`
 
+Where opts are:
+
+* `port` - the port to connect to
+* `host` - the host to connect to, or `localhost` if none was given
+* `tcp_opts` - TCP options to pass to node's `net.connect` method, which 
+ is `{}` by default
+* `log_obj` - An object to use to log info, warnings, and errors on this 
+ transport.  By default, the default logging to `console.log` will be used.
+ See *Logging* below.
+* `do_tcp_delay` - By default, the `Transport` will `setNoDelay` on
+ TCP streams, but if you specify this flag as true, that behavior will
+ be suppressed.
+* `hooks` - Hooks to be called on connection error and EOF. Especially
+ useful for `RobustTransport`s (see below)
+* `debug_hook` - A debugging hook.  If set, it will turn on RPC tracing
+ via the given debugging hook (a function). See _Debugging_ below.
+
+The following two options are used internally by `Server` and `Listener`
+classes, and should not be accessed directly:
+* `tcp_stream` - Wrap an existing TCP stream 
+* `parent` - A parent listener object
 
 ### Clients
 
