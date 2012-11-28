@@ -438,10 +438,28 @@ The former has a few extra; see the code in [server.iced](https://github.com/max
 
 #### server.ContextualServer
 
-Construct a `server.ContextualServer` which a `programs` objects that
-maps program names to classes. When a new connection is made, one
+Here's an example:
+
+```coffeescript
+class Prog1 extends server.Handler
+  h_foo : (arg, res) -> 
+    console.log "RPC to foo() from #{@transport.remote_address()}"
+    res.result { y : arg.i + 2 }
+  h_bar : (arg, res) -> res.result { y : arg.j * arg.k }
+
+s = new server.ContextualServer 
+  port : 8881
+  classes :
+    "prog.1" : Prog1
+        
+await s.listen defer err
+console.log "Error: #{err}" if err?
+```
+
+Construct a `server.ContextualServer` with a `classes` object that
+maps program names to classes.  When a new connection is established, one
 object is made for each program in that dictionary, and then that new
-"context" object becomes the `this` object for RPCs on that program on
+object becomes the `this` object for RPCs on that program on
 that connection.  It's not quite so crazy when you see it in action;
 see the code in
 [server.iced](https://github.com/maxtaco/node-framed-msgpack-rpc/blob/master/src/server.iced).
