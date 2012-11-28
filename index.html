@@ -30,32 +30,113 @@
 
       </header>
       <section>
-        <h3>Welcome to GitHub Pages.</h3>
+        <h2>Framed Msgpack RPC</h2>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+<p><code>framed-msgpack-rpc</code> (FMPRPC) is an RPC system for node.js.  It allows
+clients to call remote procedures on servers.  An RPC consists of: (1)
+a string name; (2) an argument that is a single JSON object;
+(3) a reply that is also a single JSON object.  Of course, those
+objects can be arrays, or dictionaries, so arguments and return values
+can be complex and interesting.</p>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
+<p>FMRPC is a variant of the
+<a href="http://redmine.msgpack.org/projects/msgpack/wiki/RPCDesign">Msgpack-RPC</a>
+protocol specification for node.js.  Msgpack-RPC communicates
+binary JSON objects that are efficiently encoded and decoded with the
+<a href="http://msgpack.org">MessagePack</a> serialization format. </p>
+
+<p>"Framed" Msgpack-RPC differs from standard Msgpack-RPC in a small way:
+the encoding of the length of the packet is prepended to each
+packet. This way, receivers can efficiently buffer data until a full
+packet is available to decode. In an event-based context like node.js,
+framing simplifies implementation, and yields a faster decoder,
+especially for very large messages.</p>
+
+<p>By convention, RPCs are grouped into <em>programs</em>, which can have
+one or more <em>versions</em>.  Each (prog,vers) pair then has a collection
+of procedures, meaning an RPC is identified unabmiguously by a 
+(prog,vers,proc) triple.  In practice, these three strings are
+joined with "." characters, and the dotted triple is the RPC name.</p>
+
+<p>Due to framing, this protocol is not compatible with existing
+Msgpack-RPC systems.  This implementation supports TCP transports only
+at the current time.</p>
+
+<h2>Simple Use</h2>
+
+<p>The most simple way to write a server is with the <code>SimpleServer</code>
+class as below:</p>
+
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">rpc</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'framed-msgpack-rpc'</span><span class="p">);</span>
+<span class="kd">var</span> <span class="nx">srv</span><span class="o">=</span> <span class="k">new</span> <span class="nx">rpc</span><span class="p">.</span><span class="nx">Server</span> <span class="p">({</span>
+    <span class="nx">programs</span> <span class="o">:</span> <span class="p">{</span>
+        <span class="s2">"myprog.1"</span> <span class="o">:</span> <span class="p">{</span>
+            <span class="nx">add</span> <span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">arg</span><span class="p">,</span> <span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">response</span><span class="p">.</span><span class="nx">result</span><span class="p">(</span><span class="nx">arg</span><span class="p">.</span><span class="nx">a</span> <span class="o">+</span> <span class="nx">arg</span><span class="p">.</span><span class="nx">b</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nx">port</span> <span class="o">:</span> <span class="mi">8000</span> 
+<span class="p">});</span>
+<span class="nx">srv</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"Error binding: "</span> <span class="o">+</span> <span class="nx">err</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"Listening!"</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+
+<p>a corresponding client might look like:</p>
+
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">x</span> <span class="o">=</span> <span class="nx">rpc</span><span class="p">.</span><span class="nx">createTransport</span><span class="p">({</span> <span class="nx">host</span><span class="o">:</span> <span class="s1">'127.0.0.1'</span><span class="p">,</span> <span class="nx">port</span> <span class="o">:</span> <span class="mi">8000</span> <span class="p">});</span>
+<span class="nx">x</span><span class="p">.</span><span class="nx">connect</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">ok</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">ok</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"error connecting"</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">c</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">rpc</span><span class="p">.</span><span class="nx">Client</span><span class="p">(</span><span class="nx">x</span><span class="p">,</span> <span class="s2">"myprog.1"</span><span class="p">);</span>
+        <span class="nx">c</span><span class="p">.</span><span class="nx">invoke</span><span class="p">(</span><span class="s1">'add'</span><span class="p">,</span> <span class="p">{</span> <span class="nx">a</span> <span class="o">:</span> <span class="mi">5</span><span class="p">,</span> <span class="nx">b</span> <span class="o">:</span> <span class="mi">4</span><span class="p">},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"error in RPC: "</span> <span class="o">+</span> <span class="nx">err</span><span class="p">);</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span> 
+                <span class="nx">assert</span><span class="p">.</span><span class="nx">equal</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="nx">response</span><span class="p">);</span>
+            <span class="p">}</span>
+            <span class="nx">x</span><span class="p">.</span><span class="nx">close</span><span class="p">();</span>
+        <span class="p">});</span>
+    <span class="p">}</span>
+<span class="p">});</span>
+</pre></div>
+
+<p>Or, equivalently, in beautiful 
+<a href="https://github.com/maxtaco/coffee-script">IcedCoffeeScript</a>:</p>
+
+<div class="highlight"><pre><span class="nv">x = </span><span class="nx">rpc</span><span class="p">.</span><span class="nx">createTransport</span> <span class="p">{</span> <span class="nv">host: </span><span class="s">'127.0.0.1'</span><span class="p">,</span> <span class="nv">port : </span><span class="mi">8000</span> <span class="p">}</span>
+<span class="nx">await</span> <span class="nx">x</span><span class="p">.</span><span class="nx">connect</span> <span class="nx">defer</span> <span class="nx">ok</span>
+<span class="k">if</span> <span class="o">not</span> <span class="nx">ok</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">"error connecting"</span>
+<span class="k">else</span>
+    <span class="nv">c = </span><span class="k">new</span> <span class="nx">rpc</span><span class="p">.</span><span class="nx">Client</span> <span class="nx">x</span><span class="p">,</span> <span class="s">"myprog.1"</span>
+    <span class="nx">await</span> <span class="nx">c</span><span class="p">.</span><span class="nx">invoke</span> <span class="s">'add'</span><span class="p">,</span> <span class="p">{</span> <span class="nv">a : </span><span class="mi">5</span><span class="p">,</span> <span class="nv">b : </span><span class="mi">4</span><span class="p">},</span> <span class="nx">defer</span> <span class="nx">err</span><span class="p">,</span> <span class="nx">response</span>
+    <span class="k">if</span> <span class="nx">err</span><span class="o">?</span> <span class="k">then</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span> <span class="s">"error in RPC: </span><span class="si">#{</span><span class="nx">err</span><span class="si">}</span><span class="s">"</span>
+    <span class="k">else</span> <span class="nx">assert</span><span class="p">.</span><span class="nx">equal</span> <span class="mi">9</span><span class="p">,</span> <span class="nx">response</span>
+    <span class="nx">x</span><span class="p">.</span><span class="nx">close</span><span class="p">()</span>
+</pre></div>
+
+<h2>Installation</h2>
+
+<p>It should work to just install with npm:</p>
+
+<pre><code>npm install -g framed-msgpack-rpc
 </code></pre>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+<p>If you install by hand, you will need to install the one dependency,
+which is the <a href="http://github.com/JulesAU/node-msgpack">Msgpack C bindings</a>,
+available as <code>msgpack2</code> on npm:</p>
 
-<h3>Designer Templates</h3>
+<pre><code>npm install -g msgpack2
+</code></pre>
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
-
-<h3>Rather Drive Stick?</h3>
-
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
-
-<h3>Authors and Contributors</h3>
-
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
-
-<h3>Support or Contact</h3>
-
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
+<p>For full API document, see the GitHub-hosted README file.</p>
       </section>
       <footer>
         <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
