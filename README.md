@@ -60,8 +60,8 @@ a corresponding client might look like:
 
 ```javascript
 var x = rpc.createTransport({ host: '127.0.0.1', port : 8000 });
-x.connect(function (ok) {
-    if (!ok) {
+x.connect(function (err) {
+    if (err) {
         console.log("error connecting");
     } else {
         var c = new rpc.Client(x, "myprog.1");
@@ -82,8 +82,8 @@ Or, equivalently, in beautiful
 
 ```coffee
 x = rpc.createTransport { host: '127.0.0.1', port : 8000 }
-await x.connect defer ok
-if not ok
+await x.connect defer err
+if err
     console.log "error connecting"
 else
     c = new rpc.Client x, "myprog.1"
@@ -191,12 +191,12 @@ options that can be specified via `ropts`:
 #### transport.Transport.connect
 
 ```javascript
-x.connect(function (ok) { if (ok) { console.log("connected!") } });
+x.connect(function (err) { if (!err) { console.log("connected!") } });
 ```
 
 Connect a transport if it's not already connected. Takes a single callback,
-which takes one parameter --- a boolean that's `true` in the case of a 
-success, and `false` otherwise. In the case of a `RobustTransport`, the
+which takes one parameter --- an error that's null in the case of a 
+success, and non-null otherwise. In the case of a `RobustTransport`, the
 callback will be fired after the initial connection attempt, but will continue
 to reconnect in the background. Additional error and warnings are issued
 via the logger object, and an `info` is issued when a connection succeeds.
