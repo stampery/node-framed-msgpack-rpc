@@ -11,6 +11,7 @@ task 'build', 'build the whole jam', (cb) ->
   await clearLibJs defer()
   await runIced [ '-I', 'none', '-c', '-o', LIB ].concat(files), defer()
   await copyIcedRuntime defer()
+  await writeVersion defer()
   console.log "Done building."
   cb() if typeof cb is 'function'
 
@@ -53,4 +54,25 @@ copyIcedRuntime = (cb) ->
     else
       ok = true
   cb ok
-  
+
+writeVersion = (cb) ->
+  infile = "package.json"
+  stem = "version.js"
+  outfile = path.join LIB, stem
+  await fs.readFile infile, defer err, data
+  ok = false
+  if err
+    console.log "Error reading #{infile}: #{err}"
+  else
+    try
+      obj = JSON.parse data
+      v = obj.version
+      code = "exports.version = \"#{v}\";"
+      await fs.writeFile outfile, code, defer err
+      if err
+        console.log "Error writing #{outfile}: #{err}"
+      else
+        ok = true
+    catch e
+      console.log "JSON parse error: #{e}"
+  cb ok

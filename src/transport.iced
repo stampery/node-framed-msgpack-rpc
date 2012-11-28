@@ -118,12 +118,12 @@ exports.Transport = class Transport extends Dispatch
   connect : (cb) ->
     await @_lock.acquire defer()
     if not @is_connected()
-      await @_connect_critical_section defer res
+      await @_connect_critical_section defer err
     else
-      res = true
+      err = null
     @_lock.release()
-    cb res if cb
-    @_reconnect() unless res
+    cb err if cb
+    @_reconnect() if err?
 
   ##-----------------------------------------
 
@@ -236,8 +236,11 @@ exports.Transport = class Transport extends Dispatch
     if ok
       # Now remap the event emitters
       @_activate_stream x
+      err = null
+    else if not err?
+      err = new Error "error in connection"
 
-    cb ok
+    cb err
 
   ##-----------------------------------------
   # To fulfill the packetizer contract, the following...
@@ -315,8 +318,8 @@ exports.RobustTransport = class RobustTransport extends Transport
         go = false
       else
         @_info "#{prfx}connecting (attempt #{i})"
-        await @_connect_critical_section defer ok
-        if not ok 
+        await @_connect_critical_section defer err
+        if err?
           await setTimeout defer(), @reconnect_delay*1000
         else
           go = false

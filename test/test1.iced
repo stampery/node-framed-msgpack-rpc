@@ -21,8 +21,8 @@ exports.test2 = (T, cb) -> test_A T, cb
 
 test_A = (T, cb) -> 
   x = new transport.Transport { port : PORT, host : "-" }
-  await x.connect defer ok
-  if not ok
+  await x.connect defer err
+  if err?
     console.log "Failed to connect in Transport..."
   else
     ok = false

@@ -42,9 +42,8 @@ class GlobalTester
         console.log "TRACE-#{argv.t}: #{JSON.stringify m}"
     klass = if rtopts then RobustTransport else Transport
     x = new klass opts, rtopts
-    await x.connect defer ok
-    if not ok
-      err = "Failed to connect in Transport..."
+    await x.connect defer err
+    if err?
       x = null
     else
       c = new Client x, prog
