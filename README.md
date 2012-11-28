@@ -1,6 +1,6 @@
 # Framed Msgpack RPC
 
-`framed-msgpack-rpc` (FMPRPC) is an RPC system for node.js.  It allows
+Framed Msgpack RPC (FMPRPC) is an RPC system for node.js.  It allows
 clients to call remote procedures on servers.  An RPC consists of: (1)
 a simple string name; (2) an argument that is a single JSON object;
 (3) a reply that is also a single JSON object.  Of course, those
@@ -415,7 +415,7 @@ ways.  First off, it only handles one program, which is typically
 set on object construction.  Second off, it depends on inheritance;
 I've used CoffeeScript here, but you can use hand-rolled JavaScript
 style inheritance too. Finally, it infers your method hooks: on
-construction, it iterators over all methods in the current object,
+construction, it iterates over all methods in the current object,
 and infers that a hook of the form `h_foo` handles the RPC `foo`.
 
 Here's an example:
@@ -446,21 +446,28 @@ class Prog1 extends server.Handler
     res.result { y : arg.i + 2 }
   h_bar : (arg, res) -> res.result { y : arg.j * arg.k }
 
+class Prog2 extends server.Handler
+  h_foo : (arg, res) -> res.error "not yet implemented"
+  h_bar : (arg, res) -> res.error "not yet implemented"
+
 s = new server.ContextualServer 
-  port : 8881
-  classes :
-    "prog.1" : Prog1
+   port : 8881 
+   classes : 
+     "prog.1" : Prog1
+     "prog.2" : Prog2
         
 await s.listen defer err
 console.log "Error: #{err}" if err?
 ```
 
-Construct a `server.ContextualServer` with a `classes` object that
-maps program names to classes.  When a new connection is established, one
-object is made for each program in that dictionary, and then that new
-object becomes the `this` object for RPCs on that program on
-that connection.  It's not quite so crazy when you see it in action;
-see the code in
+This code construct a `server.ContextualServer` with a `classes`
+object that maps program names to classes. Whenever a new connection
+is established in the above example, a new `Prog1` object and a new
+`Prog2` object is created.  The former will handle all RPCs to
+`prog.1` on that connection; the latter will handle all RPCs to
+`prog.2`. Note that the `this` object here is per-connection, not
+per-server.  This allows you to store all sorts of interesting
+per-connection state. For more info, please see
 [server.iced](https://github.com/maxtaco/node-framed-msgpack-rpc/blob/master/src/server.iced).
 
 #### server.Server.listen
