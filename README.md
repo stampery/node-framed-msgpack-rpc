@@ -274,6 +274,18 @@ x.set_debug_hook(function(m) {})
 Report that an RPC call was made or answered, either on the server or 
 client. See *Debugging* below for more details.
 
+#### transport.createTransport or rpc.createTransport
+
+```javascript
+var x = rpc.createTransport(opts)
+```
+
+Create either a new `Transport` or `RobustTransport` with just one call.
+The `opts` array is as above, but with a few differences.  First, the
+`opts` here is the merge of the `opts` and `ropts` above for the case
+of `RobustTransports`s; and second, an option of `robust : true` will
+enable the robust variety of the transport.
+
 ### Clients
 
 `Clients` are thin wrappers around `Transports`, allowing RPC client
@@ -330,7 +342,6 @@ c.notify(proc, arg);
 
 Here, there is no callback, and no way to check if the sever received
 the message (or got an error).
-
 
 
 ### Servers
