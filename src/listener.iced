@@ -81,6 +81,7 @@ exports.Listener = class Listener
   ##-----------------------------------------
 
   _warn : (err) -> @log_obj.warn err
+  _err  : (err) -> @log_obj.err err
 
   ##-----------------------------------------
 
@@ -113,6 +114,7 @@ exports.Listener = class Listener
       x.on 'error', (err) => @handle_error err
       x.on 'close', (err) => @handle_close()
     else
+      @_err err
       @_tcp_server = null
       
     cb err

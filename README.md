@@ -366,7 +366,7 @@ var server = require('framed-msgpack-rpc').server;
 
 But most of the classes are also rexported from the top-level module.
 
-### server.Server
+#### server.Server
 
 Create a new server object; specify a port to bind to, a host IP
 address to bind to, and also a set of RPC handlers.
@@ -381,8 +381,32 @@ For `opts`, the fields are:
 * `host` - A host IP to bind to
 * `TransportClass` - A transport class to use when allocating a new
  Transport for an incoming connection.  By default, it's `transport.Transport`
-* `log_obj` - A log object to log errors, and also to assign to (via `clone`)
-  to child connections.
+* `log_obj` - A log object to log errors, and also to assign to 
+  (via `make_child`) to child connections. Use the default log class
+  (which logs to `console.log`) if unspecified.
+
+#### server.Server.listen
+
+Bind to a port, and listen for incoming connections
+
+```javascript
+s.listen(function(err) {});
+```
+
+On success, the callback is fired with `null`, and otherwise,
+an error object is passed.
+
+#### server.Server.listen_retry
+
+As above, but keep retrying if binding failed:
+
+```javascript
+s.listen_retry(delay, function(err) {});
+```
+
+The retry happens every `delay` seconds.  The given function is called
+back with `null` once the reconnection happens, or with the actual
+error if it was other than `err.code = 'EADDRINUSE'`.
 
 
 ### Logging Hooks
