@@ -52,6 +52,8 @@ var srv= new rpc.Server ({
 srv.listen(function (err) {
     if (err) {
         console.log("Error binding: " + err);
+    } else {
+        console.log("Listening!");
     }
 });
 ```
@@ -59,23 +61,39 @@ srv.listen(function (err) {
 a corresponding client might look like:
 
 ```javascript
-var c = rpc.createClient('127.0.0.1', 8000, 
-    function() {
-        c.invoke('add', { a : 5, b : 4}, 
-            function(err, response) {
+var x = rpc.createTransport({ host: '127.0.0.1', port : 8000 });
+x.connect(function (err) {
+    if (err) {
+        console.log("error connecting: " + err);
+    } else {
+        var c = new rpc.Client(x, "myprog.1");
+        c.invoke('add', { a : 5, b : 4}, function(err, response) {
+            if (err) {
+                console.log("error in RPC: " + err);
+            } else { 
                 assert.equal(9, response);
-                c.close();
-            });
-    }, "myprog.v1");
+            }
+            x.close();
+        });
+    }
+
+});
 ```
 
 Or, equivalently, in beautiful 
 [IcedCoffeeScript](https://github.com/maxtaco/coffee-script):
 
 ```coffee
-await (c = rpc.createClient '127.0.0.1', 8000, defer(ok), "myprog.v1")
-await c.invoke 'add', { a : 5, b : 4 }, defer err, response
-c.close()
+x = rpc.createTransport { host: '127.0.0.1', port : 8000 }
+await x.connect defer err
+if err?
+    console.log "error connecting: #{err}"
+else
+    c = new rpc.Client x, "myprog.1"
+    await c.invoke 'add', { a : 5, b : 4}, defer err, response
+    if err? then console.log "error in RPC: #{err}"
+    else assert.equal 9, response
+    x.close()
 ```
 
 Advanced Usage
