@@ -23,7 +23,7 @@ is_array = (a) -> (typeof a is 'object') and Array.isArray a
 exports.Packetizer = class Packetizer
   """
   A packetizer that is used to read and write to an underlying stream
-  (like a TcpTransport below).  Should be inherited by such a class.
+  (like a Transport below).  Should be inherited by such a class.
   The subclasses should implement:
   
      @_raw_write(msg,enc) - write this msg to the stream with the

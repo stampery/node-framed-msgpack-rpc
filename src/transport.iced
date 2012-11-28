@@ -42,9 +42,11 @@ class TcpStreamWrapper
 
 ##=======================================================================
 
-exports.TcpTransport = class TcpTransport extends Dispatch
+exports.Transport = class Transport extends Dispatch
 
   ##-----------------------------------------
+  # Public API
+  # 
 
   constructor : ({ @port, @host, @tcp_opts, tcp_stream, @log_obj,
                    @parent, @do_tcp_delay, @hooks, debug_hook}) ->
@@ -82,6 +84,8 @@ exports.TcpTransport = class TcpTransport extends Dispatch
   ##-----------------------------------------
 
   next_generation : () ->
+    """To be called by TcpStreamWrapper objects but not by
+    average users."""
     ret = @_generation
     @_generation++
     return ret
@@ -93,7 +97,6 @@ exports.TcpTransport = class TcpTransport extends Dispatch
   ##-----------------------------------------
 
   remote_address : () -> if @_tcpw? then @_tcpw.remote_address() else null
-  remote : () -> @remote_address()
  
   ##-----------------------------------------
 
@@ -101,14 +104,6 @@ exports.TcpTransport = class TcpTransport extends Dispatch
     o = log.new_default_logger() unless o
     @log_obj = o
     @log_obj.set_remote @_remote_str
-  
-  ##-----------------------------------------
-
-  _warn  : (e) -> @log_obj.warn  e
-  _info  : (e) -> @log_obj.info  e
-  _fatal : (e) -> @log_obj.fatal e
-  _debug : (e) -> @log_obj.debug e
-  _error : (e) -> @log_obj.error e
    
   ##-----------------------------------------
 
@@ -134,6 +129,16 @@ exports.TcpTransport = class TcpTransport extends Dispatch
       @_tcpw.close()
       @_tcpw = null
 
+  #
+  # /Public API
+  ##---------------------------------------------------
+
+  _warn  : (e) -> @log_obj.warn  e
+  _info  : (e) -> @log_obj.info  e
+  _fatal : (e) -> @log_obj.fatal e
+  _debug : (e) -> @log_obj.debug e
+  _error : (e) -> @log_obj.error e
+  
   ##-----------------------------------------
 
   _close : (tcpw) ->
@@ -243,11 +248,11 @@ exports.TcpTransport = class TcpTransport extends Dispatch
 
 ##=======================================================================
 
-exports.RobustTransport = class RobustTransport extends TcpTransport
+exports.RobustTransport = class RobustTransport extends Transport
    
   ##-----------------------------------------
 
-  # Take two dictionaries -- the first is as in TcpTransport,
+  # Take two dictionaries -- the first is as in Transport,
   # and the second is configuration parameters specific to this
   # transport.
   #
@@ -382,7 +387,7 @@ exports.RobustTransport = class RobustTransport extends TcpTransport
 
 exports.createTransport = (opts) ->
   if opts.robust then new RobustTransport opts, opts
-  else                new TcpTransport opts
+  else                new Transport opts
 
 ##=======================================================================
 

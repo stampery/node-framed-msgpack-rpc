@@ -18,11 +18,11 @@ exports.collect_hooks = collect_hooks =  (proto) ->
 exports.Server = class Server extends TcpListener
   """This server is connection-centric. When the handlers of the
   passed programs are invoked, the 'this' object to the handler will
-  be the TcpTransport that's handling that client. This server is available
+  be the Transport that's handling that client. This server is available
   via this.parent.
 
-  Note you can pass a TransportClass to use instead of the TcpTransport.
-  It should be a subclass of TcpTransport.
+  Note you can pass a TransportClass to use instead of the Transport.
+  It should be a subclass of Transport.
   """
   
   #-----------------------------------------

@@ -20,10 +20,10 @@ exports.test1 = (T, cb) -> test_A T, cb
 exports.test2 = (T, cb) -> test_A T, cb
 
 test_A = (T, cb) -> 
-  x = new transport.TcpTransport { port : PORT, host : "-" }
+  x = new transport.Transport { port : PORT, host : "-" }
   await x.connect defer ok
   if not ok
-    console.log "Failed to connect in TcpTransport..."
+    console.log "Failed to connect in Transport..."
   else
     ok = false
     c = new client.Client x, "P.1"

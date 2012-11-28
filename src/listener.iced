@@ -1,6 +1,6 @@
 
 net = require 'net'
-{TcpTransport} = require './transport'
+{Transport} = require './transport'
 {List} = require './list'
 
 iced = require('./iced').runtime
@@ -12,7 +12,7 @@ exports.TcpListener = class TcpListener
   ##-----------------------------------------
 
   constructor : ({@port, @host, @TransportClass}) ->
-    @TransportClass = TcpTransport unless @TransportClass
+    @TransportClass = Transport unless @TransportClass
     @_children = new List
 
   ##-----------------------------------------

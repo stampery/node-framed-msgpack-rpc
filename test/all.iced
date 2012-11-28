@@ -44,7 +44,7 @@ class GlobalTester
     x = new klass opts, rtopts
     await x.connect defer ok
     if not ok
-      err = "Failed to connect in TcpTransport..."
+      err = "Failed to connect in Transport..."
       x = null
     else
       c = new Client x, prog

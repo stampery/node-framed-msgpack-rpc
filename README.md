@@ -74,7 +74,6 @@ x.connect(function (err) {
             x.close();
         });
     }
-
 });
 ```
 
@@ -109,7 +108,35 @@ available as `msgpack2` on npm:
 
 ## Full API Documentation
 
+If you are building real applications, it's good to look deeper than
+the simple API introduced above. The full library is based on an
+abstraction called an FMRPC *Transport*.  This class represents a
+stream of FMRPC packets.  Clients and servers are built on top of
+these streams, but not in one-to-one correspondence.  That is, several
+clients and several servers can share the same Transport object. Thus,
+FMRPC supports multiplexing of many logically separated
+application-level streams over the same underlying TCP stream.
+
 ### Transports
+
+The transport mechanics are available via the submodule `transport`:
+
+```javascript
+
+var transport = require('fast-msgpack-rpc').transport;
+```
+
+Transports are auto-allocated in the case of servers (as part of the listen
+and connect process), but for clients, you'll find yourself allocating and
+connecting them explicitly.
+
+All transports are *stream transports* and for now are built atop TCP
+streams.  Eventually we'll roll out support for Unix domain sockets, but there
+is no plan for UDP support right now.
+
+#### transport.Transport
+
+
 
 ### Clients
 
