@@ -138,8 +138,7 @@ is no plan for UDP support right now.
 ```javascript
 var x = new transport.Transport(opts);
 ```
-
-Where `opts` are:
+Make a new TCP transport, where `opts` are:
 
 * `port` - the port to connect to
 * `host` - the host to connect to, or `localhost` if none was given
@@ -152,7 +151,9 @@ Where `opts` are:
  TCP streams, but if you specify this flag as true, that behavior will
  be suppressed.
 * `hooks` - Hooks to be called on connection error and EOF. Especially
- useful for `RobustTransport`s (see below)
+ useful for `RobustTransport`s (see below).  The known hooks are
+** `hooks.connected` - Called when a transport is connected
+** `hooks.eof` - Called when a transport hits EOF.
 * `debug_hook` - A debugging hook.  If set, it will turn on RPC tracing
  via the given debugging hook (a function). See _Debugging_ below.
 
@@ -161,16 +162,46 @@ classes, and should not be accessed directly:
 * `tcp_stream` - Wrap an existing TCP stream 
 * `parent` - A parent listener object
 
+#### transport.RobustTransport
+
+```javascript
+var x = new transport.RobustTransport(opts, ropts);
+```
+
+As above, but with some more features:
+
+* If disconnected, will attempt to reconnect until successful.
+* Will queue calls issued in between a disconnect and a reconnect.
+* Will warn of RPCs that are outstanding for more than the given
+ threshholds.
+
+The `opts` dictionary is as in `Transport`, but there are additional
+options that can be specified via `ropts`:
+
+* `reconnect_delay` - a float - the number of seconds to wait between
+ connection attempts.
+* `queue_max` - the maximum number of RPCs to queue while reconnecting
+* `warn_threshhold` - RPCs that take more than this number of seconds
+ are warned about via the logging object.
+* `error_threshhold` - RPCs that take more than this number of seconds
+ are errored about via the logging object. Also, a timer will be set
+ up to warn after this many seconds if the RPC isn't completed in time,
+ while the RPC is still outstanding.
+
 #### transport.Transport.connect
 
 ```javascript
-transport.connect(function (ok) {
-    if (err) {
-    } else {
-
-    }
-});
+x.connect(function (ok) { if (ok) { console.log("connected!") } });
 ```
+
+Connect a transport if it's not already connected. Takes a single callback,
+which takes one parameter --- a boolean that's `true` in the case of a 
+success, and `false` otherwise. In the case of a `RobustTransport`, the
+callback will be fired after the initial connection attempt, but will continue
+to reconnect in the background. Additional error and warnings are issued
+via the logger object, and an `info` is issued when a connection succeeds.
+Also, if a `hooks.connected` was passed, it will be called on a successful
+connection, both the first time, and after any subsequent reconnect.
 
 ### Clients
 
