@@ -152,8 +152,8 @@ Make a new TCP transport, where `opts` are:
  be suppressed.
 * `hooks` - Hooks to be called on connection error and EOF. Especially
  useful for `RobustTransport`s (see below).  The known hooks are
-** `hooks.connected` - Called when a transport is connected
-** `hooks.eof` - Called when a transport hits EOF.
+    * `hooks.connected` - Called when a transport is connected
+    * `hooks.eof` - Called when a transport hits EOF.
 * `debug_hook` - A debugging hook.  If set, it will turn on RPC tracing
  via the given debugging hook (a function). See _Debugging_ below.
 
