@@ -2,16 +2,16 @@ maxtaco/node-framed-msgpack-rpc
 ========================
 
 `framed-msgpack-rpc` (FMPRPC) is an RPC system for node.js.  It allows
-clients to call remote prodecures on servers.  The remote procedures
-are indentified by a simple string name.  Each RPC takes one argument,
-and returns one object.  Of course, those objects can be arrays,
-dictionaries, or any JSON object, so arguments and return values can
-be complex and interesting.
+clients to call remote procedures on servers.  An RPC consists of: (1)
+a simple string name; (2) an argument that is a single JSON object;
+(3) a reply that is also a single JSON object.  Of course, those
+objects can be arrays, or dictionaries, so arguments and return values
+can be complex and interesting.
 
-FMRPC is a variation of the
+FMRPC is a variant of the
 [Msgpack-RPC](http://redmine.msgpack.org/projects/msgpack/wiki/RPCDesign)
 protocol specification for node.js.  Msgpack-RPC communicates
-JSON-like objects, that are efficiently encodede and decoded with the
+binary JSON objects that are efficiently encoded and decoded with the
 [MessagePack](http://msgpack.org) serialization format. 
 
 "Framed" Msgpack-RPC differs from standard Msgpack-RPC in a small way:
@@ -31,7 +31,7 @@ Due to framing, this protocol is not compatible with existing
 Msgpack-RPC systems.  This implementation supports TCP transports only
 at the current time.
 
-Simple Usage
+Simple Use
 ------------
 
 The most simple way to write a server is with the `SimpleServer`
