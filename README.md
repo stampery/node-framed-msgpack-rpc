@@ -168,7 +168,7 @@ classes, and should not be accessed directly:
 var x = new transport.RobustTransport(opts, ropts);
 ```
 
-As above, but with some more features:
+A subclass of the above; with some more features:
 
 * If disconnected, will attempt to reconnect until successful.
 * Will queue calls issued in between a disconnect and a reconnect.
@@ -275,6 +275,63 @@ Report that an RPC call was made or answered, either on the server or
 client. See *Debugging* below for more details.
 
 ### Clients
+
+`Clients` are thin wrappers around `Transports`, allowing RPC client
+calls.  Several clients can share the same Transport.  Import the
+client libraries as a submodule:
+
+```javascript
+var client = require('framed-msgpack-rpc').client;
+```
+
+The API is as follows:
+
+#### client.Client
+
+Make a new RPC client:
+
+```
+var c = new client.Client(x, prog);
+```
+
+Where `x` is a `transport.Transport` and `prog` is the name of an RPC
+program.  Examples for `prog` are of the form `myprog.1`, meaning the
+program is called `myprog` and the version is 1.
+
+Given a client, you can now make RPC calls over the specified connection:
+
+#### client.Client.invoke
+
+Use a Client to invoke an RPC as follows:
+
+```javscript
+c.invoke(proc, arg, function(err, res) {});
+```
+
+The parameters are:
+
+* proc - The name of the RPC procedure.  It is joined with the
+ RPC `program.version` specified when the client was allocated, yielding
+ a dotted triple that's sent over the wire.
+* arg - A JSON object that's the argument to the RPC.
+* cb - A callback that's fired once there is a reply to the RPC. `err`
+is `null` in the success case, and non-null otherwise.  The `res` object is
+optionally returned in a success case, giving the reply to the RPC.  If
+the server supplied a `null` result, then `res` can still be `null` in
+the case of success.
+
+#### client.Client.notify
+
+As above, but don't wait for a reply:
+
+```javscript
+c.notify(proc, arg);
+```
+
+Here, there is no callback, and no way to check if the sever received
+the message (or got an error).
+
+
 
 ### Servers
 
