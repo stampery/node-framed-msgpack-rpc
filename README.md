@@ -60,9 +60,9 @@ a corresponding client might look like:
 
 ```javascript
 var x = rpc.createTransport({ host: '127.0.0.1', port : 8000 });
-x.connect(function (err) {
-    if (err) {
-        console.log("error connecting: " + err);
+x.connect(function (ok) {
+    if (!ok) {
+        console.log("error connecting");
     } else {
         var c = new rpc.Client(x, "myprog.1");
         c.invoke('add', { a : 5, b : 4}, function(err, response) {
@@ -82,9 +82,9 @@ Or, equivalently, in beautiful
 
 ```coffee
 x = rpc.createTransport { host: '127.0.0.1', port : 8000 }
-await x.connect defer err
-if err?
-    console.log "error connecting: #{err}"
+await x.connect defer ok
+if not ok
+    console.log "error connecting"
 else
     c = new rpc.Client x, "myprog.1"
     await c.invoke 'add', { a : 5, b : 4}, defer err, response
@@ -135,9 +135,11 @@ is no plan for UDP support right now.
 
 #### transport.Transport
 
-`var x = new transport.Transport(opts);`
+```javascript
+var x = new transport.Transport(opts);
+```
 
-Where opts are:
+Where `opts` are:
 
 * `port` - the port to connect to
 * `host` - the host to connect to, or `localhost` if none was given
@@ -158,6 +160,17 @@ The following two options are used internally by `Server` and `Listener`
 classes, and should not be accessed directly:
 * `tcp_stream` - Wrap an existing TCP stream 
 * `parent` - A parent listener object
+
+#### transport.Transport.connect
+
+```javascript
+transport.connect(function (ok) {
+    if (err) {
+    } else {
+
+    }
+});
+```
 
 ### Clients
 
