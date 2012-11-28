@@ -10,7 +10,7 @@ iced = require('./iced').runtime
 #
 # A shared wrapper object for which close is idempotent
 # 
-class TcpStreamWrapper
+class StreamWrapper
   constructor : (@_tcp_stream, @_parent) ->
     @_generation = @_parent.next_generation()
     @_write_closed_warn = false
@@ -84,7 +84,7 @@ exports.Transport = class Transport extends Dispatch
   ##-----------------------------------------
 
   next_generation : () ->
-    """To be called by TcpStreamWrapper objects but not by
+    """To be called by StreamWrapper objects but not by
     average users."""
     ret = @_generation
     @_generation++
@@ -167,14 +167,14 @@ exports.Transport = class Transport extends Dispatch
     @_info "EOF on transport" unless @_explicit_close
     @_close tcpw
     
-    # for TCP connections that are children of TcpListeners,
+    # for TCP connections that are children of Listeners,
     # we close the connection here and disassociate
     @parent.close_child @ if @parent
    
   ##-----------------------------------------
 
   # In other classes we can override this...
-  # See 'ReconnectTcpTRansport'
+  # See 'RobustTransport'
   _reconnect : () -> null
  
   ##-----------------------------------------
@@ -189,7 +189,7 @@ exports.Transport = class Transport extends Dispatch
     # The current generation needs to be wrapped into this hook;
     # this way we don't close the next generation of connection
     # in the case of a reconnect....
-    w = new TcpStreamWrapper x, @
+    w = new StreamWrapper x, @
     @_tcpw = w
 
     #

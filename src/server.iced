@@ -1,5 +1,5 @@
 
-{TcpListener} = require './listener'
+{Listener} = require './listener'
 
 ##=======================================================================
 
@@ -15,7 +15,7 @@ exports.collect_hooks = collect_hooks =  (proto) ->
     
 ##=======================================================================
 
-exports.Server = class Server extends TcpListener
+exports.Server = class Server extends Listener
   """This server is connection-centric. When the handlers of the
   passed programs are invoked, the 'this' object to the handler will
   be the Transport that's handling that client. This server is available
@@ -40,7 +40,7 @@ exports.Server = class Server extends TcpListener
 
 ##=======================================================================
 
-exports.SimpleServer = class SimpleServer extends TcpListener
+exports.SimpleServer = class SimpleServer extends Listener
 
   constructor : (d) ->
     super d
@@ -82,7 +82,7 @@ exports.Handler = class Handler
 
 ##=======================================================================
 
-exports.ContextualServer = class ContextualServer extends TcpListener
+exports.ContextualServer = class ContextualServer extends Listener
   """This exposes a slightly different object as `this` to RPC
   handlers -- in this case, it a Handler object that points to be both
   the parent server, and also the child transport.  So both are accessible

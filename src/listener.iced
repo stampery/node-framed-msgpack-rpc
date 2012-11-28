@@ -7,7 +7,7 @@ iced = require('./iced').runtime
 
 ##=======================================================================
 
-exports.TcpListener = class TcpListener
+exports.Listener = class Listener
 
   ##-----------------------------------------
 
