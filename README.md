@@ -107,7 +107,7 @@ available as `msgpack2` on npm:
     npm install -g msgpack2
 
 
-## Full Documentation
+## Full API Documentation
 
 ### Transports
 
@@ -118,3 +118,9 @@ available as `msgpack2` on npm:
 ### Logging Hooks
 
 ### Debug Hooks
+
+## Internals
+
+### Packetizer
+
+### Dispatch
