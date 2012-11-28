@@ -286,6 +286,11 @@ The `opts` array is as above, but with a few differences.  First, the
 of `RobustTransports`s; and second, an option of `robust : true` will
 enable the robust variety of the transport.
 
+Note that by default, I like function to use underscores rather than
+camel case, but there's a lot of functions like `createConnection` 
+in the standard library, so this particular function is in camel
+case.  Sorry for the inconsistency.
+
 ### Clients
 
 `Clients` are thin wrappers around `Transports`, allowing RPC client
@@ -343,8 +348,42 @@ c.notify(proc, arg);
 Here, there is no callback, and no way to check if the sever received
 the message (or got an error).
 
-
 ### Servers
+
+To write a server, the programmer must specify a series of *hooks*
+that handle individual RPCs.  There are a few ways to achieve these
+ends with this library.  The big difference is what is the `this`
+object for the hook.  In the case of the `server.Server` and
+`server.SimpleServer` classes, the `this` object is the server itself.
+In the `server.ContextualServer` class, the `this` object is a
+per-connection context object.  The first two are good for most cases.
+
+You can get the server library through the submodule server:
+
+```javascript
+var server = require('framed-msgpack-rpc').server;
+```
+
+But most of the classes are also rexported from the top-level module.
+
+### server.Server
+
+Create a new server object; specify a port to bind to, a host IP
+address to bind to, and also a set of RPC handlers.
+
+```javascript
+var s = new server.Server(opts);
+```
+
+For `opts`, the fields are:
+
+* `port` - A port to bind to
+* `host` - A host IP to bind to
+* `TransportClass` - A transport class to use when allocating a new
+ Transport for an incoming connection.  By default, it's `transport.Transport`
+* `log_obj` - A log object to log errors, and also to assign to (via `clone`)
+  to child connections.
+
 
 ### Logging Hooks
 

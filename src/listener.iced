@@ -2,6 +2,7 @@
 net = require 'net'
 {Transport} = require './transport'
 {List} = require './list'
+log = require './log'
 
 iced = require('./iced').runtime
 
@@ -11,10 +12,26 @@ exports.Listener = class Listener
 
   ##-----------------------------------------
 
-  constructor : ({@port, @host, @TransportClass}) ->
+  constructor : ({@port, @host, @TransportClass, log_obj}) ->
     @TransportClass = Transport unless @TransportClass
+    @set_logger log_obj
     @_children = new List
 
+  ##-----------------------------------------
+
+  _default_logger : ->
+    l = log.new_default_logger()
+    l.set_prefix "RPC-Server"
+    h = @host or "0.0.0.0"
+    l.set_remote "#{h}:#{@port}"
+    return l
+   
+  ##-----------------------------------------
+
+  set_logger : (o) ->
+    o = @_default_logger() unless o?
+    @log_obj = o
+   
   ##-----------------------------------------
 
   # Feel free to change this for your needs (if you want to wrap a connection
@@ -31,7 +48,10 @@ exports.Listener = class Listener
 
   ##-----------------------------------------
   
-  make_new_log_object : (c) -> null
+  make_new_log_object : (c) ->
+    a = c.address()
+    r = [ c.address, c.port ].join ":"
+    @log_obj.make_child { prefix : "RPC", remote : r }
     
   ##-----------------------------------------
 
@@ -60,10 +80,7 @@ exports.Listener = class Listener
 
   ##-----------------------------------------
 
-  _warn : (err, hook) ->
-    hook = console.log unless hook
-    addr = if @host then @host else "0.0.0.0"
-    hook "#{addr}:#{@port}: #{err}"
+  _warn : (err) -> @log_obj.warn err
 
   ##-----------------------------------------
 
@@ -102,14 +119,14 @@ exports.Listener = class Listener
 
   ##-----------------------------------------
 
-  listen_retry : (delay, cb, log_hook = null) ->
+  listen_retry : (delay, cb) ->
     go = true
     err = null
     while go
       await @listen defer err
       if err?.code == 'EADDRINUSE'
-        @_warn err, log_hook
-        await setTimeout defer(), delay
+        @_warn err
+        await setTimeout defer(), delay*1000
       else go = false
     cb err
       

@@ -38,13 +38,14 @@ exports.Logger = class Logger
   _output : (m) -> console.log m
   
   _log : (m, l, ohook) ->
-    parts = [ "RPC" ]
+    parts = [ @prefix ]
     parts.push "[#{l}]" if l
     parts.push @remote if @remote
     parts.push m
     ohook = @output_hook unless ohook
     ohook parts.join " "
-    
+
+  make_child : (d) -> return new Logger d
 
 ##=======================================================================
  
