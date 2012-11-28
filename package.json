@@ -14,5 +14,7 @@
   "scripts" : {
       	"test":	"node test/all-tests.js"
   },
-  "dependencies" : { }
+  "dependencies" : { 
+        "msgpack2" : ">=0.1.10"
+  }
 }
