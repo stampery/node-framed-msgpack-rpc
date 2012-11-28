@@ -220,9 +220,50 @@ return a string in dotted-quad notation.
 var g = x.get_generation()
 ```
 
-Get the generation number of this stream connection.  In the case of a 
-regular Transport, it's always going to be 1.  In the case of a RobustTransport,
-this number is incremented every time the connection is reestablished.
+Get the generation number of this stream connection.  In the case of a
+regular Transport, it's always going to be 1.  In the case of a
+`RobustTransport`, this number is incremented every time the
+connection is reestablished.
+
+#### transport.Transport.set_logger
+
+```javascript
+x.set_logger(new logger.Logger({prefix : ">", level : logger.WARN}));
+```
+
+Set the logger object on this Transport to be the passed logger. 
+You can pass a subclass of the given `Logger` class if you need
+custom behavior to fit in with your logging system.
+
+#### transport.Transport.is_connected
+
+```javascript
+var b = x.is_connected();
+```
+
+Returns a bool, which is `true` if the transport is currently connected,
+and `false` otherwise.
+
+#### transport.Transport.close
+
+```javascript
+x.close()
+```
+
+Call to actively close the given connection.  It will trigger all of the
+regular hooks and warnings that an implicit close would.  In the case
+of a `RobustTransport`, the transport will not attempt a reconnection.
+
+#### transport.Transport.get_logger
+
+```javascript
+var l = x.get_logger()
+```
+
+If you want to grab to the logger on the given transport, use this
+method.  For instance, you can change the verbosity level with
+`x.get_logger().set_level(2)` if you are using the standard logging
+object.
 
 #### transport.Transport.set_debug_hook
 

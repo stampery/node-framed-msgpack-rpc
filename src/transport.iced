@@ -107,6 +107,10 @@ exports.Transport = class Transport extends Dispatch
    
   ##-----------------------------------------
 
+  get_logger : () -> @log_obj
+   
+  ##-----------------------------------------
+
   is_connected : () -> @_tcpw?.is_connected()
    
   ##-----------------------------------------
