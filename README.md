@@ -408,6 +408,23 @@ The retry happens every `delay` seconds.  The given function is called
 back with `null` once the reconnection happens, or with the actual
 error if it was other than `err.code = 'EADDRINUSE'`.
 
+#### server.Server.close
+
+Close a server, and give back its port to the OS.
+
+#### server.Server.set_port
+
+Before calling `listen`, you can use this method to set the port
+that the `Server` is going to bind to.
+
+#### server.Server.walk_children
+
+Walk the list of children, calling the specified function on each
+child connection in the list:
+
+```javascript
+s.walk_child(function(ch) {});
+```
 
 ### Logging Hooks
 
