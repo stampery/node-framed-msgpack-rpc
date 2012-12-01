@@ -16,5 +16,9 @@
   },
   "dependencies" : { 
         "msgpack2" : ">=0.1.10"
-  }
+  },
+  "licenses": [{
+      "type": "MIT",
+      "url": "http://www.opensource.org/licenses/mit-license.php"
+  }]
 }
