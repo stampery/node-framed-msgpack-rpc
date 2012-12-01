@@ -206,7 +206,7 @@ exports.Transport = class Transport extends Dispatch
     # So for now, we are going to ignore the 'end' and just act
     # on the 'close'.
     # 
-    x.on 'error', (err) => @_handle_error cg, w
+    x.on 'error', (err) => @_handle_error err, w
     x.on 'close', ()    => @_handle_close w
     x.on 'data',  (msg) => @packetize_data msg
 

@@ -1,3 +1,5 @@
 
 # often wrong, but better than nothing...
-exports.version = "1.0.7"
+# ...this is overwritten in lib/version.js with the right
+# copy of the version (taken from package.json).
+exports.version = "1.0.8"
