@@ -598,10 +598,10 @@ F =
   DIR : 0x100          # which direction -- incoming or outgoing?
 ```
 
-Debugging hooks can choose to spam some or all of this information,
-depending on how bad the bug is.  For most purposes, see `debug.make_hook`
-for how to make a tunable debugging hook, that will only print the
-fields of your choosing.
+Debugging hooks can choose to spam some or all of these fields,
+depending on how bad the bug is.  For most purposes, the supplied
+`debug.make_hook` makes a nice debug hook that you can easily tune to
+print only the fields of your choosing.
 
 See [debug.iced](https://github.com/maxtaco/node-framed-msgpack-rpc/blob/master/src/debug.iced) for more details.
 
