@@ -595,7 +595,7 @@ F =
   ARG : 0x20
   RES : 0x40
   TYPE : 0x80
-  DIR : 0x100          # which direction
+  DIR : 0x100          # which direction -- incoming or outgoing?
 ```
 
 Debugging hooks can choose to spam some or all of this information,
