@@ -557,18 +557,16 @@ log.Logger.error(msg)
 log.Logger.fatal(msg)
 ```
 
-They all, by default, write the line `msg` to `console.log` while
-prepending the `remote_address` supplied above.  The default
-log level is set to `log.levels.INFO`, but you can set it 
-to `log.levels.WARN`, etc.  At a given level, warnings at a lower
-level will be silently swallowed.
+They all, by default, write the message `msg` to `console.log` while
+prepending the `remote_address` supplied above.  The default log level
+is set to `log.levels.INFO`, but you can set it to `log.levels.WARN`,
+`log.levels.ERRORS`, etc.  Warnings at lower levels will be silently
+swallowed.  For the default logger object, the method
+`log.Logger.set_level` can be used to set the logging level as desired.
 
-For the default logger object, the method `log.Logger.set_level` can
-be used to set the logging level accordingly. 
-
-If you make your own custom class, you can subclass `log.Logger`, or you
-can use duck-typing, just make sure you class implements `set_remote`
-and the five leveled logging methods. 
+To make a custom logger class, you can subclass `log.Logger`, or use
+duck-typing: just make sure your class implements `set_remote` and the
+five leveled logging methods above.
 
 See `VLogger` in `test/all.iced` for one example of a different logger
 --- it's used to make the regression tests look pretty.
@@ -577,8 +575,35 @@ See [log.iced](https://github.com/maxtaco/node-framed-msgpack-rpc/blob/master/sr
 
 ### Debug Hooks
 
-To come. See [debug.iced](https://github.com/maxtaco/node-framed-msgpack-rpc/blob/master/src/debug.iced) for details.
+Debug hooks are JavaScript functions that are passed into the FMPRPC core,
+and if available, can be used to dump RPC debug traces. They can
+be installed when a `Transport` is allocated, by specifying the
+`opts.debug_hook` option, or by calling `set_debug_hook` on most
+FMPRPC objects.
 
+If debug hooks are active, they are called with `debug.Message` object
+when an RPC comes in or goes out.  The `debug.Message` object contains
+a bunch of fields:
+
+```coffeescript
+F =
+  METHOD : 0x1
+  REMOTE : 0x2
+  SEQID : 0x4
+  TIMESTAMP : 0x8
+  ERR : 0x10  
+  ARG : 0x20
+  RES : 0x40
+  TYPE : 0x80
+  DIR : 0x100          # which direction
+```
+
+Debugging hooks can choose to spam some or all of this information,
+depending on how bad the bug is.  For most purposes, see `debug.make_hook`
+for how to make a tunable debugging hook, that will only print the
+fields of your choosing.
+
+See [debug.iced](https://github.com/maxtaco/node-framed-msgpack-rpc/blob/master/src/debug.iced) for more details.
 
 ## Internals
 
