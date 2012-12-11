@@ -35,8 +35,6 @@ exports.Logger = class Logger
   error : (m) -> @_log m, "E" if @level <= L.ERROR
   fatal : (m) -> @_log m, "F" if @level <= L.FATAL
 
-  _output : (m) -> console.log m
-  
   _log : (m, l, ohook) ->
     parts = [ @prefix ]
     parts.push "[#{l}]" if l

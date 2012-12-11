@@ -516,7 +516,63 @@ s.walk_children (function(ch) {});
 
 ### Logging Hooks
 
-To come. See [log.iced](https://github.com/maxtaco/node-framed-msgpack-rpc/blob/master/src/log.iced) for details.
+As you could imagine, an RPC can generate a lot of errors, warnings, and
+informational messages.  Examples include: unmarshalling failures, 
+unexpected EOFs, connection breaking, unhandled RPCs, etc. 
+
+This package has an extensible logging system to fit in with your 
+application, and a default logging system that should work for a lot
+of cases too.
+
+The basic classes can be found in the `log` submodule, accessible as:
+
+```javascript
+var log = require('framed-msgpack-rpc').log;
+```
+
+When a new `Listener` or `Transport` class is instantiated, it will
+need a new logger object (note that `Listener` is the base class for the
+various `Server` classes).  It will try the following steps to pick a
+`log.Logger` object:
+
+1. Access the `opt.log_obj` passed to the `Transport` or `Listener` 
+  constructor.  This is often times an object of a custom subclass
+  of `log.Logger`.
+1. If that is was not specified, allocate a new `log.Logger` object:
+     1. If `log.set_default_logger_class` was previous called, allocate
+        one of those objects.
+     1. Otherwise, allocate a `log.Logger` object.
+
+One this `Logger` object is found, the `Transport` or `Listener` flag
+will call `set_remote` on it, so that subsequent log lines will show
+which client or server generated the message.
+
+Logging is via the following methods, in ascending order of severity:
+
+* `log.Logger.debug(msg)`
+* `log.Logger.info(msg)`
+* `log.Logger.warn(msg)`
+* `log.Logger.error(msg)`
+* `log.Logger.fatal(msg)`
+
+They all, by default, write the line `msg` to `console.log` while
+prepending the `remote_address` supplied above.  The default
+log level is set to `log.levels.INFO`, but you can set it 
+to `log.levels.WARN`, etc.  At a given level, warnings at a lower
+level will be silently swallowed.
+
+For the default logger object, the method `log.Logger.set_level` can
+be used to set the logging level accordingly. 
+
+If you make your own custom class, you can subclass `log.Logger`, or you
+can use duck-typing, just make sure you class implements `set_remote`
+and the five leveled logging methods. 
+
+See `VLogger` in `test/all.iced`
+for one example of a different logger --- it's used to make the regression
+tests look pretty.
+
+See [log.iced](https://github.com/maxtaco/node-framed-msgpack-rpc/blob/master/src/log.iced) for more details.
 
 ### Debug Hooks
 
