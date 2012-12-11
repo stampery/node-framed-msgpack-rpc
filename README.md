@@ -122,7 +122,8 @@ application-level streams over the same underlying TCP stream.
 The transport mechanics are available via the submodule `transport`:
 
 ```javascript
-var transport = require('fast-msgpack-rpc').transport;
+var rpc = require('framed-msgpack-rpc');
+var transport = rpc.transport;
 ```
 
 Transports are auto-allocated in the case of servers (as part of the listen
@@ -203,6 +204,25 @@ via the logger object, and an `info` is issued when a connection succeeds.
 Also, if a `hooks.connected` was passed, it will be called on a successful
 connection, both the first time, and after any subsequent reconnect.
 
+#### transport.Transport.is_connected
+
+```javascript
+var b = x.is_connected();
+```
+
+Returns a bool, which is `true` if the transport is currently connected,
+and `false` otherwise.
+
+#### transport.Transport.close
+
+```javascript
+x.close()
+```
+
+Call to actively close the given connection.  It will trigger all of the
+regular hooks and warnings that an implicit close would.  In the case
+of a `RobustTransport`, the transport will not attempt a reconnection.
+
 #### transport.Transport.remote_address
 
 ```javascript
@@ -225,34 +245,6 @@ regular Transport, it's always going to be 1.  In the case of a
 `RobustTransport`, this number is incremented every time the
 connection is reestablished.
 
-#### transport.Transport.set_logger
-
-```javascript
-x.set_logger(new logger.Logger({prefix : ">", level : logger.WARN}));
-```
-
-Set the logger object on this Transport to be the passed logger. 
-You can pass a subclass of the given `Logger` class if you need
-custom behavior to fit in with your logging system.
-
-#### transport.Transport.is_connected
-
-```javascript
-var b = x.is_connected();
-```
-
-Returns a bool, which is `true` if the transport is currently connected,
-and `false` otherwise.
-
-#### transport.Transport.close
-
-```javascript
-x.close()
-```
-
-Call to actively close the given connection.  It will trigger all of the
-regular hooks and warnings that an implicit close would.  In the case
-of a `RobustTransport`, the transport will not attempt a reconnection.
 
 #### transport.Transport.get_logger
 
@@ -264,6 +256,16 @@ If you want to grab to the logger on the given transport, use this
 method.  For instance, you can change the verbosity level with
 `x.get_logger().set_level(2)` if you are using the standard logging
 object.
+
+#### transport.Transport.set_logger
+
+```javascript
+x.set_logger(new logger.Logger({prefix : ">", level : logger.WARN}));
+```
+
+Set the logger object on this Transport to be the passed logger. 
+You can pass a subclass of the given `Logger` class if you need
+custom behavior to fit in with your logging system.
 
 #### transport.Transport.set_debug_hook
 
@@ -283,7 +285,7 @@ var x = rpc.createTransport(opts)
 Create either a new `Transport` or `RobustTransport` with just one call.
 The `opts` array is as above, but with a few differences.  First, the
 `opts` here is the merge of the `opts` and `ropts` above for the case
-of `RobustTransports`s; and second, an option of `robust : true` will
+of `RobustTransport`s; and second, an option of `robust : true` will
 enable the robust variety of the transport.
 
 Note that by default, I like function to use underscores rather than
@@ -346,7 +348,8 @@ c.notify(proc, arg);
 ```
 
 Here, there is no callback, and no way to check if the sever received
-the message (or got an error).
+the message (or got an error).  Notifying seems weird to me, but it
+was in the original MsgpackRpc system, so it's reproduced here.
 
 ### Servers
 
