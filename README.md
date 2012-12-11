@@ -543,17 +543,19 @@ various `Server` classes).  It will try the following steps to pick a
         one of those objects.
      1. Otherwise, allocate a `log.Logger` object.
 
-One this `Logger` object is found, the `Transport` or `Listener` flag
-will call `set_remote` on it, so that subsequent log lines will show
-which client or server generated the message.
+Once this `log.Logger` object is allocated, the `Transport` or
+`Listener` class will call `set_remote` on it, so that subsequent log
+lines will show which client or server generated the message.
 
 Logging is via the following methods, in ascending order of severity:
 
-* `log.Logger.debug(msg)`
-* `log.Logger.info(msg)`
-* `log.Logger.warn(msg)`
-* `log.Logger.error(msg)`
-* `log.Logger.fatal(msg)`
+```javascript
+log.Logger.debug(msg)
+log.Logger.info(msg)
+log.Logger.warn(msg)
+log.Logger.error(msg)
+log.Logger.fatal(msg)
+```
 
 They all, by default, write the line `msg` to `console.log` while
 prepending the `remote_address` supplied above.  The default
@@ -568,9 +570,8 @@ If you make your own custom class, you can subclass `log.Logger`, or you
 can use duck-typing, just make sure you class implements `set_remote`
 and the five leveled logging methods. 
 
-See `VLogger` in `test/all.iced`
-for one example of a different logger --- it's used to make the regression
-tests look pretty.
+See `VLogger` in `test/all.iced` for one example of a different logger
+--- it's used to make the regression tests look pretty.
 
 See [log.iced](https://github.com/maxtaco/node-framed-msgpack-rpc/blob/master/src/log.iced) for more details.
 
