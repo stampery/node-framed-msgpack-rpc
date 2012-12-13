@@ -99,7 +99,9 @@ exports.Listener = class Listener
    
   ##-----------------------------------------
 
+  # A sensible default handler
   handle_error : (err) ->
+    @_tcp_server = null
     @log_obj.error "error in listener: #{err}"
    
   ##-----------------------------------------
