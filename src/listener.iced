@@ -76,7 +76,7 @@ exports.Listener = class Listener
   ##-----------------------------------------
 
   got_new_connection : (x) ->
-    throw new Error "@got_new_connection() is abstract; please implement!"
+    throw new Error "@got_new_connection() is pure virtual; please implement!"
    
   ##-----------------------------------------
 
