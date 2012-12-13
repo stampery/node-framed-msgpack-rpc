@@ -71,6 +71,8 @@ exports.Listener = class Listener
   _got_new_connection : (c) ->
     # Call down to a subclass
     x = @make_new_transport c
+
+    # pure virtual, that a Server-like class will implement
     @got_new_connection x
 
   ##-----------------------------------------
@@ -85,11 +87,6 @@ exports.Listener = class Listener
 
   ##-----------------------------------------
 
-  _warn : (err) -> @log_obj.warn err
-  _err  : (err) -> @log_obj.error err
-
-  ##-----------------------------------------
-
   close : (cb) ->
     await @_tcp_server.close defer() if @_tcp_server
     @_tcp_server = null
@@ -98,7 +95,18 @@ exports.Listener = class Listener
   ##-----------------------------------------
 
   handle_close : () ->
-    ## closing down
+    @log_obj.info "listener closing down"
+   
+  ##-----------------------------------------
+
+  handle_error : (err) ->
+    @log_obj.error "error in listener: #{err}"
+   
+  ##-----------------------------------------
+
+  _set_hooks : () ->
+    @_tcp_server.on 'error', (err) => @handle_error err
+    @_tcp_server.on 'close', (err) => @handle_close()
    
   ##-----------------------------------------
 
@@ -116,23 +124,24 @@ exports.Listener = class Listener
     await rv.wait defer which
     if which is OK
       err = null
-      x.on 'error', (err) => @handle_error err
-      x.on 'close', (err) => @handle_close()
+      @_set_hooks()
     else
-      @_err err
+      @log_obj.error err
       @_tcp_server = null
       
     cb err
 
   ##-----------------------------------------
 
+  # specify a delay in seconds, and retry every that many seconds
+  # if it fails, in a loop.
   listen_retry : (delay, cb) ->
     go = true
     err = null
     while go
       await @listen defer err
       if err?.code == 'EADDRINUSE'
-        @_warn err
+        @log_obj.warn err
         await setTimeout defer(), delay*1000
       else go = false
     cb err
