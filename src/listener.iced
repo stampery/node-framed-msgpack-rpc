@@ -75,6 +75,11 @@ exports.Listener = class Listener
 
   ##-----------------------------------------
 
+  got_new_connection : (x) ->
+    throw new Error "@got_new_connection() is abstract; please implement!"
+   
+  ##-----------------------------------------
+
   _make_server : () ->
     @_tcp_server = net.createServer (c) => @_got_new_connection c
 
