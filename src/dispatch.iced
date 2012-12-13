@@ -8,18 +8,18 @@ iced = require('./iced').runtime
 
 exports.Reponse = class Reponse
   constructor : (@dispatch, @seqid) ->
-    @debug = null
+    @debug_msg = null
     
   result : (res) ->
-    if @debug
-      @debug.response null, res
-      @debug.call()
+    if @debug_msg
+      @debug_msg.response null, res
+      @debug_msg.call()
     @dispatch.respond @seqid, null, res
 
   error : (err) ->
-    if @debug
-      @debug.response err, null
-      @debug.call()
+    if @debug_msg
+      @debug_msg.response err, null
+      @debug_msg.call()
     @dispatch.respond @seqid, err, null
 
 ##=======================================================================
@@ -123,10 +123,10 @@ exports.Dispatch = class Dispatch extends Packetizer
         method, seqid,
         arg : args,
         dir : dbg.constants.dir.OUTGOING,
-        remote : @remote(),
+        remote : @remote_address(),
         type : dtype
-      }
-      @_debug_hook debug_msg.msg()
+      }, @_debug_hook
+      debug_msg.call()
         
     
     # Down to the packetizer, which will jump back up to the Transport!
@@ -160,11 +160,11 @@ exports.Dispatch = class Dispatch extends Packetizer
     pair = @get_handler_pair method
 
     if @_debug_hook
-      debug_msg = new debug.Message {
+      debug_msg = new dbg.Message {
         method
         arg : param
         dir : dbg.constants.dir.INCOMING
-        remote : @remote()
+        remote : @remote_address()
         type : dbg.constants.type.SERVER
         error : if pair then null else "unknown method"
       }, @_debug_hook
