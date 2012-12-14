@@ -39,6 +39,8 @@ class StreamWrapper
 
   remote_address : () ->
     if @_tcp_stream then @_tcp_stream.remoteAddress else null
+  remote_port : () ->
+    if @_tcp_stream then @_tcp_stream.remotePort else null
 
 ##=======================================================================
 
@@ -97,7 +99,8 @@ exports.Transport = class Transport extends Dispatch
   ##-----------------------------------------
 
   remote_address : () -> if @_tcpw? then @_tcpw.remote_address() else null
- 
+  remote_port : () -> if @_tcpw? then @_tcpw.remote_port() else null
+   
   ##-----------------------------------------
 
   set_logger : (o) ->

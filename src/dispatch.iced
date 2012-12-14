@@ -124,6 +124,7 @@ exports.Dispatch = class Dispatch extends Packetizer
         arg : args,
         dir : dbg.constants.dir.OUTGOING,
         remote : @remote_address(),
+        port : @remote_port(),
         type : dtype
       }, @_debug_hook
       debug_msg.call()
@@ -162,9 +163,11 @@ exports.Dispatch = class Dispatch extends Packetizer
     if @_debug_hook
       debug_msg = new dbg.Message {
         method
+        seqid : response.seqid
         arg : param
         dir : dbg.constants.dir.INCOMING
         remote : @remote_address()
+        port : @remote_port()
         type : dbg.constants.type.SERVER
         error : if pair then null else "unknown method"
       }, @_debug_hook

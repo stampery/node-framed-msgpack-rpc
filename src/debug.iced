@@ -17,12 +17,13 @@ F =
   RES : 0x40
   TYPE : 0x80
   DIR : 0x100
-  VERBOSE : 0x200
+  PORT : 0x200
+  VERBOSE : 0x400
   ALL : 0xfffffff
 
 F.LEVEL_0 = F.NONE
 F.LEVEL_1 = F.METHOD | F.TYPE | F.DIR | F.TYPE
-F.LEVEL_2 = F.LEVEL_1 | F.SEQID | F.TIMESTAMP | F.REMOTE
+F.LEVEL_2 = F.LEVEL_1 | F.SEQID | F.TIMESTAMP | F.REMOTE | F.PORT
 F.LEVEL_3 = F.LEVEL_2 | F.ERR
 F.LEVEL_4 = F.LEVEL_3 | F.RES | F.ARGS
 
@@ -41,6 +42,7 @@ SF =
   c : F.TYPE
   d : F.DIRECTION
   v : F.VERBOSE
+  P : F.PORT
   A : F.ALL
   0 : F.LEVEL_0
   1 : F.LEVEL_1
@@ -125,8 +127,7 @@ exports.make_hook = (flgs, fn) ->
   # A default output fn, which uses the logging system
   unless fn
     logger = log.new_default_logger()
-    logger.set_level log.levels.DEBUG
-    fn = (m) -> logger.debug JSON.stringify m
+    fn = (m) -> logger.info JSON.stringify m
 
   return (msg) ->
     new_msg = {}
