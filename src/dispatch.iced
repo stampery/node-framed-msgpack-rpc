@@ -139,9 +139,9 @@ exports.Dispatch = class Dispatch extends Packetizer
         
       await (@_invocations[seqid] = defer(error,result) )
 
-      if @_debug_hook
+      if debug_msg
         debug_msg.response error, result
-        @_debug_hook debug_msg.msg()
+        debug_msg.call()
         
     cb error, result if cb
 
@@ -169,7 +169,7 @@ exports.Dispatch = class Dispatch extends Packetizer
         error : if pair then null else "unknown method"
       }, @_debug_hook
 
-      response.debug = debug_msg if response
+      response.debug_msg = debug_msg if response
       debug_msg.call()
 
     if pair then pair[1].call pair[0], param, response, @

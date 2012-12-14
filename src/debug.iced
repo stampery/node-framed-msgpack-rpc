@@ -54,6 +54,8 @@ dir =
   INCOMING : 1
   OUTGOING : 2
 
+flip_dir = (d) -> if d is dir.INCOMING then dir.OUTGOING else dir.INCOMING
+
 ##=======================================================================
 
 type =
@@ -158,7 +160,7 @@ exports.Message = class Message
   response : (error, result) ->
     @_msg.err = error
     @_msg.res = result
-    @_msg.dir = if dir.OUTGOING then dir.INCOMING else dir.OUTGOING
+    @_msg.dir = flip_dir @_msg.dir
 
   msg : -> @_msg
 
