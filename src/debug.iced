@@ -1,6 +1,10 @@
 
 ##=======================================================================
 
+log = require "./log"
+
+##=======================================================================
+
 # Flags for what fields are in our debug messages
 F =
   NONE : 0
@@ -115,6 +119,12 @@ exports.make_hook = (flgs, fn) ->
   # Usually don't copy the arg or res if it's in the other direction,
   # but this can overpower that
   V = sflags & F.VERBOSE
+
+  # A default output fn, which uses the logging system
+  unless fn
+    logger = log.new_default_logger()
+    logger.set_level log.levels.DEBUG
+    fn = (m) -> logger.debug JSON.stringify m
 
   return (msg) ->
     new_msg = {}

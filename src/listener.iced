@@ -16,6 +16,7 @@ exports.Listener = class Listener
     @TransportClass = Transport unless @TransportClass
     @set_logger log_obj
     @_children = new List
+    @_debug_hook = null
 
   ##-----------------------------------------
 
@@ -25,6 +26,10 @@ exports.Listener = class Listener
     h = @host or "0.0.0.0"
     l.set_remote "#{h}:#{@port}"
     return l
+   
+  ##-----------------------------------------
+
+  set_debug_hook : (h) -> @_debug_hook = h
    
   ##-----------------------------------------
 
@@ -43,6 +48,7 @@ exports.Listener = class Listener
       port : c.remotePort
       parent : @
       log_obj : @make_new_log_object c
+      debug_hook : @_debug_hook
     @_children.push x
     return x
 

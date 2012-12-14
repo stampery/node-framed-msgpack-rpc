@@ -7,7 +7,9 @@ iced = require('../src/iced').runtime
 
 ##-----------------------------------------------------------------------
 
-argv = require('optimist').usage('Usage: $0 [-d] [ -t<string>]').argv
+argv = require('optimist')
+  .usage('Usage: $0 [-d] [ -t<string>] [<file1> <file2> ...]')
+  .boolean('d').argv
 
 ##-----------------------------------------------------------------------
 
@@ -24,6 +26,7 @@ class VLogger extends Logger
   info : (m) -> @_log m, "I",  VLogger.my_ohook "cyan"
   warn : (m) -> @_log m, "W",  VLogger.my_ohook "yellow"
   error : (m) -> @_log m, "E", VLogger.my_ohook "red"
+  debug : (m) -> @_log m, "D", VLogger.my_ohook "yellow"
 
 ##-----------------------------------------------------------------------
 
@@ -117,17 +120,21 @@ class Runner
   
   load_files : (cb) ->
     @_dir = path.dirname __filename
-    base = path.basename __filename
-    await fs.readdir @_dir, defer err, files
-    if err?
-      ok = false
-      @err "In reading #{@_dir}: #{err}"
-    else
+    if argv._.length
       ok = true
-      re = /test.*\.(iced|coffee)$/
-      for file in files when file.match(re) 
-        @_files.push file
-      @_files.sort()
+      @_files = argv._
+    else
+      base = path.basename __filename
+      await fs.readdir @_dir, defer err, files
+      if err?
+        ok = false
+        @err "In reading #{@_dir}: #{err}"
+      else
+        ok = true
+        re = /test.*\.(iced|coffee)$/
+        for file in files when file.match(re) 
+          @_files.push file
+        @_files.sort()
     cb ok
   
   ##-----------------------------------------
