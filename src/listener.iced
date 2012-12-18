@@ -30,15 +30,18 @@ exports.Listener = class Listener
    
   ##-----------------------------------------
 
-  set_debugger   : (d, apply_to_children) ->
+  # You actually don't want to apply this to children,
+  # since the children will need different loggers and therefore
+  # different debuggers.
+  set_debugger : (d) ->
     @_dbgr = d
-    if apply_to_children
-      @walk_children (c) => c.set_debugger d
 
   ##-----------------------------------------
     
-  set_debug_flags : (f, atc) ->
-    @set_debugger dbg.make_debugger(f, @log_obj, @log_obj.debug), atc
+  set_debug_flags : (f, apply_to_children) ->
+    @set_debugger dbg.make_debugger f, @log_obj
+    if apply_to_children
+      @walk_children (c) => c.set_debug_flags f
    
   ##-----------------------------------------
 

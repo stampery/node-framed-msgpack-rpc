@@ -181,7 +181,7 @@ exports.Message = class Message
 
 ##=======================================================================
 
-exports.make_debugger = (d, lo, lom) ->
-  if d is 0 then null else new Debugger d, lo, lom
+exports.make_debugger = (d, lo) ->
+  if d is 0 then null else new Debugger d, lo, lo.debug
 
 ##=======================================================================
