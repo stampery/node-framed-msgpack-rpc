@@ -4,6 +4,7 @@ net = require 'net'
 log = require './log'
 {Timer} = require './timer'
 iced = require('./iced').runtime
+dbg = require './debug'
 
 ##=======================================================================
 
@@ -81,7 +82,12 @@ exports.Transport = class Transport extends Dispatch
 
   ##-----------------------------------------
 
-  set_debugger : (d) -> @_dbgr = d
+  set_debugger   : (d) -> @_dbgr = d
+  
+  ##---------------------------------------
+  
+  set_debug_flag : (d) ->
+    @set_debugger dbg.make_debugger d, @log_obj, @log_obj.debug
    
   ##-----------------------------------------
 

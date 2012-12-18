@@ -93,6 +93,7 @@ exports.constants =
 # consituent bitfields.
 #
 exports.sflags_to_flags = sflags_to_flags = (s) ->
+  s = "#{s}"
   res = 0
   for i in [0...s.length]
     c = s.charAt i
@@ -177,5 +178,10 @@ exports.Message = class Message
   show_res : (V) ->
     (V or (@is_server() and @is_outgoing()) or
           (@is_client() and @is_incoming()))
+
+##=======================================================================
+
+exports.make_debugger = (d, lo, lom) ->
+  if d is 0 then null else new Debugger d, lo, lom
 
 ##=======================================================================

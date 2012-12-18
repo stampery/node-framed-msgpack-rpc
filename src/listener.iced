@@ -3,6 +3,7 @@ net = require 'net'
 {Transport} = require './transport'
 {List} = require './list'
 log = require './log'
+dbg = require './debug'
 
 iced = require('./iced').runtime
 
@@ -29,7 +30,15 @@ exports.Listener = class Listener
    
   ##-----------------------------------------
 
-  set_debugger : (d) -> @_dbgr = d
+  set_debugger   : (d, apply_to_children) ->
+    @_dbgr = d
+    if apply_to_children
+      @walk_children (c) => c.set_debugger d
+
+  ##-----------------------------------------
+    
+  set_debug_flag : (f, atc) ->
+    @set_debugger dbg.make_debugger(f, @log_obj, @log_obj.debug), atc
    
   ##-----------------------------------------
 
