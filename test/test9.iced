@@ -21,7 +21,7 @@ exports.init = (cb) ->
     classes :
       "P.1" : P_v1
 
-  s.set_debug_hook debug.make_hook debug.constants.flags.LEVEL_4
+  s.set_debugger new debug.Debugger debug.constants.flags.LEVEL_4
         
   await s.listen defer err
   cb err

@@ -11,15 +11,11 @@ exports.Reponse = class Reponse
     @debug_msg = null
     
   result : (res) ->
-    if @debug_msg
-      @debug_msg.response null, res
-      @debug_msg.call()
+    @debug_msg.response(null, res).call() if @debug_msg
     @dispatch.respond @seqid, null, res
 
   error : (err) ->
-    if @debug_msg
-      @debug_msg.response err, null
-      @debug_msg.call()
+    @debug_msg.response(err, null).call() if @debug_msg
     @dispatch.respond @seqid, err, null
 
 ##=======================================================================
@@ -36,12 +32,12 @@ exports.Dispatch = class Dispatch extends Packetizer
     @_invocations = {}
     @_handlers = {}
     @_seqid = 1
-    @_debug_hook = null
+    @_dbgr = null
     super
 
   ##-----------------------------------------
 
-  set_debug_hook : (h) -> @_debug_hook = h
+  set_debugger : (d) -> @_dbgr = d
  
   ##-----------------------------------------
 
@@ -117,16 +113,16 @@ exports.Dispatch = class Dispatch extends Packetizer
       
     msg = [ type, seqid, method, args ]
 
-    if @_debug_hook
-      type = if notify then 
-      debug_msg = new dbg.Message {
-        method, seqid,
+    if @_dbgr
+      debug_msg = @_dbgr.new_message {
+        method,
+        seqid,
         arg : args,
         dir : dbg.constants.dir.OUTGOING,
         remote : @remote_address(),
         port : @remote_port(),
         type : dtype
-      }, @_debug_hook
+      }
       debug_msg.call()
         
     
@@ -140,9 +136,7 @@ exports.Dispatch = class Dispatch extends Packetizer
         
       await (@_invocations[seqid] = defer(error,result) )
 
-      if debug_msg
-        debug_msg.response error, result
-        debug_msg.call()
+      debug_msg.response(error, result).call() if debug_msg
         
     cb error, result if cb
 
@@ -160,8 +154,8 @@ exports.Dispatch = class Dispatch extends Packetizer
 
     pair = @get_handler_pair method
 
-    if @_debug_hook
-      debug_msg = new dbg.Message {
+    if @_dbgr
+      debug_msg = @_dbgr.new_message {
         method
         seqid : response.seqid
         arg : param
@@ -170,7 +164,7 @@ exports.Dispatch = class Dispatch extends Packetizer
         port : @remote_port()
         type : dbg.constants.type.SERVER
         error : if pair then null else "unknown method"
-      }, @_debug_hook
+      }
 
       response.debug_msg = debug_msg if response
       debug_msg.call()

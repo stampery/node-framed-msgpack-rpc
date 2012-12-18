@@ -51,7 +51,7 @@ exports.Transport = class Transport extends Dispatch
   # 
 
   constructor : ({ @port, @host, @tcp_opts, tcp_stream, @log_obj,
-                   @parent, @do_tcp_delay, @hooks, debug_hook}) ->
+                   @parent, @do_tcp_delay, @hooks, dbgr}) ->
     super
     
     @host = "localhost" if not @host or @host is "-"
@@ -66,7 +66,7 @@ exports.Transport = class Transport extends Dispatch
     @_lock = new Lock()
     @_generation = 1
     
-    @_debug_hook = debug_hook
+    @_dbgr = dbgr
 
     # We don't store the TCP stream directly, but rather, sadly,
     # a **wrapper** around the TCP stream.  This is to make stream
@@ -81,7 +81,7 @@ exports.Transport = class Transport extends Dispatch
 
   ##-----------------------------------------
 
-  set_debug_hook : (h) -> @_debug_hook = h
+  set_debugger : (d) -> @_dbgr = d
    
   ##-----------------------------------------
 

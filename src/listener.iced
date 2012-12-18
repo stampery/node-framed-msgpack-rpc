@@ -16,7 +16,7 @@ exports.Listener = class Listener
     @TransportClass = Transport unless @TransportClass
     @set_logger log_obj
     @_children = new List
-    @_debug_hook = null
+    @_dbgr = null
 
   ##-----------------------------------------
 
@@ -29,7 +29,7 @@ exports.Listener = class Listener
    
   ##-----------------------------------------
 
-  set_debug_hook : (h) -> @_debug_hook = h
+  set_debugger : (d) -> @_dbgr = d
    
   ##-----------------------------------------
 
@@ -48,7 +48,7 @@ exports.Listener = class Listener
       port : c.remotePort
       parent : @
       log_obj : @make_new_log_object c
-      debug_hook : @_debug_hook
+      dbgr : @_dbgr
     @_children.push x
     return x
 

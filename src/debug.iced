@@ -25,7 +25,7 @@ F.LEVEL_0 = F.NONE
 F.LEVEL_1 = F.METHOD | F.TYPE | F.DIR | F.TYPE
 F.LEVEL_2 = F.LEVEL_1 | F.SEQID | F.TIMESTAMP | F.REMOTE | F.PORT
 F.LEVEL_3 = F.LEVEL_2 | F.ERR
-F.LEVEL_4 = F.LEVEL_3 | F.RES | F.ARGS
+F.LEVEL_4 = F.LEVEL_3 | F.RES | F.ARG
 
 ##=======================================================================
 
@@ -101,54 +101,49 @@ exports.sflags_to_flags = sflags_to_flags = (s) ->
 
 ##=======================================================================
 
-show_arg = (msg, V) ->
-  (V or
-     ((msg.type is type.SERVER) and (msg.dir is dir.INCOMING)) or
-     ((msg.type isnt type.SERVER) and (msg.dir is dir.OUTGOING)))
-        
-show_res = (msg, V) ->
-  (V or
-     ((msg.type is type.SERVER) and (msg.dir is dir.OUTGOING)) or
-     ((msg.type isnt type.SERVER) and (msg.dir is dir.INCOMING)))
-
-#
-# Make a simple hook that takes an incoming message, turns on/off some
-# fields based on the passed flags, puts in a timestamp, and then
-# calls the given hook.
-#
-exports.make_hook = (flgs, fn) ->
-  sflags = flgs
-  sflags = sflags_to_flags flgs if typeof flgs is 'string'
+exports.Debugger = class Debugger
   
-  # Usually don't copy the arg or res if it's in the other direction,
-  # but this can overpower that
-  V = sflags & F.VERBOSE
+  constructor : (flags, @log_obj, @log_obj_mthd) ->
+    # Potentially convert from strings to integer flags
+    @flags = if typeof flags is 'string' then sflags_to_flags flags else flags
+    if not @log_obj
+      @log_obj = log.new_default_logger()
+      @log_obj_mthd = @log_obj.info
 
-  # A default output fn, which uses the logging system
-  unless fn
-    logger = log.new_default_logger()
-    fn = (m) -> logger.info JSON.stringify m
+  new_message : (dict) ->
+    return new Message dict, @
 
-  return (msg) ->
-    new_msg = {}
+  _output : (json_msg) ->
+    @log_obj_mthd.call @log_obj, JSON.stringify json_msg
+
+  _skip_flag : (f) ->
+    return f & (F.REMOTE | F.PORT)
+
+  call : (msg) ->
+    new_json_msg = {}
     
-    if (sflags & F.TIMESTAMP)
-      new_msg.timestamp = (new Date()).getTime() / 1000.0
-      
-    for key,val of msg
+    # Usually don't copy the arg or res if it's in the other direction,
+    # but this can overpower that
+    V = @flags & F.VERBOSE
+    
+    if (@flags & F.TIMESTAMP)
+      new_json_msg.timestamp = (new Date()).getTime() / 1000.0
+
+    for key,val of msg.to_json_object()
       uck = key.toUpperCase()
       flag = F[uck]
 
-      do_copy = if (sflags & flag) is 0 then false
-      else if key is "res" then show_res msg, V
-      else if key is "arg" then show_arg msg, V
+      do_copy = if @_skip_flag flag then false
+      else if (@flags & flag) is 0 then false
+      else if key is "res" then msg.show_res V
+      else if key is "arg" then msg.show_arg V
       else true
 
       if do_copy
         val = f2s[val] if (f2s = F2S[flag])?
-        new_msg[key] = val
+        new_json_msg[key] = val
         
-    fn new_msg
+    @_output new_json_msg
 
 ##=======================================================================
 
@@ -156,17 +151,31 @@ exports.Message = class Message
   """A debug message --- a wrapper around a dictionary object, with
   a few additional methods."""
 
-  constructor : (@_msg, @hook = null) ->
+  constructor : (@_msg, @_debugger = null) ->
 
   response : (error, result) ->
     @_msg.err = error
     @_msg.res = result
     @_msg.dir = flip_dir @_msg.dir
+    return @
 
-  msg : -> @_msg
+  to_json_object : -> @_msg
 
-  call : -> @hook @msg()
+  call : -> @_debugger.call @
 
   set : (k,v) -> @msg[k] = v
+
+  is_server : -> @_msg.type is type.SERVER
+  is_client : -> not @is_server()
+  is_incoming : -> @_msg.dir is dir.INCOMING
+  is_outgoing : -> not @is_incoming()
+
+  show_arg : (V) ->
+    (V or (@is_server() and @is_incoming()) or
+          (@is_client() and @is_outgoing()))
+          
+  show_res : (V) ->
+    (V or (@is_server() and @is_outgoing()) or
+          (@is_client() and @is_incoming()))
 
 ##=======================================================================
