@@ -155,8 +155,10 @@ Make a new TCP transport, where `opts` are:
  useful for `RobustTransport`s (see below).  The known hooks are
     * `hooks.connected` - Called when a transport is connected
     * `hooks.eof` - Called when a transport hits EOF.
-* `debug_hook` - A debugging hook.  If set, it will turn on RPC tracing
- via the given debugging hook (a function). See _Debugging_ below.
+* `dbgr` - A debugging object.  If set, it will turn on RPC tracing
+ via the given debugging object. See _Debugging_ below.  I would have liked
+ to call this a `debugger`, but that's a reserved keyword in node.
+ 
 
 The following two options are used internally by `Server` and `Listener`
 classes, and should not be accessed directly:
@@ -267,14 +269,30 @@ Set the logger object on this Transport to be the passed logger.
 You can pass a subclass of the given `Logger` class if you need
 custom behavior to fit in with your logging system.
 
-#### transport.Transport.set_debug_hook
+#### transport.Transport.set_debugger
 
 ```javascript
-x.set_debug_hook(function(m) {})
+x.set_debugger(obj)
 ```
 
-Report that an RPC call was made or answered, either on the server or 
-client. See *Debugging* below for more details.
+Set a debugging object on a transport.  After this is done, the core
+will report that an RPC call was made or answered, either on the
+server or client. See *Debugging* below for more details.
+
+#### transport.Transport.set_debug_flags
+
+```javascript
+x.set_debug_flags(flags)
+```
+
+Call `set_debugger` as above but with an object that will be allocated.
+The object is of type `debug.Debugger`, and is initialized with flags
+given by `flags`. All debug traces are set to transport's logger object
+at the `log.levels.DEBUG` level.
+
+These flags can either be in numerical form (e.g., `0xfff` ) or string
+literal form (e.g., `"a1m"`).  If in the latter form, the flags will
+be converted into the numerical form via `sflags_to_flags`.
 
 #### transport.createTransport or rpc.createTransport
 
@@ -573,17 +591,17 @@ See `VLogger` in `test/all.iced` for one example of a different logger
 
 See [log.iced](https://github.com/maxtaco/node-framed-msgpack-rpc/blob/master/src/log.iced) for more details.
 
-### Debug Hooks
+### Debugging and Tracing
 
-Debug hooks are JavaScript functions that are passed into the FMPRPC core,
-and if available, can be used to dump RPC debug traces. They can
+An debugger is a JavaScript object that is passed into the FMPRPC core,
+and if available, is used to dump RPC debug traces. These debuggers can
 be installed when a `Transport` is allocated, by specifying the
-`opts.debug_hook` option, or by calling `set_debug_hook` on most
+`opts.dbgr` option, or by calling `set_debugger` on most
 FMPRPC objects.
 
-If debug hooks are active, they are called with `debug.Message` object
-when an RPC comes in or goes out.  The `debug.Message` object contains
-a bunch of fields:
+If a debugging object is active, it is `call`ed with `debug.Message`
+object when an RPC comes in or goes out.  The `debug.Message` object
+contains a bunch of fields:
 
 ```coffeescript
 F =
@@ -598,10 +616,10 @@ F =
   DIR : 0x100          # which direction -- incoming or outgoing?
 ```
 
-Debugging hooks can choose to spam some or all of these fields,
+Debugging objects can choose to spam some or all of these fields,
 depending on how bad the bug is.  For most purposes, the supplied
-`debug.make_hook` makes a nice debug hook that you can easily tune to
-print only the fields of your choosing.
+`debug.Debugger` makes a nice debugger object that you can easily tune
+to print only the fields of your choosing (via the `flags` parameter).
 
 See [debug.iced](https://github.com/maxtaco/node-framed-msgpack-rpc/blob/master/src/debug.iced) for more details.
 

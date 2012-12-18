@@ -37,7 +37,7 @@ exports.Listener = class Listener
 
   ##-----------------------------------------
     
-  set_debug_flag : (f, atc) ->
+  set_debug_flags : (f, atc) ->
     @set_debugger dbg.make_debugger(f, @log_obj, @log_obj.debug), atc
    
   ##-----------------------------------------
