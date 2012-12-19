@@ -136,6 +136,12 @@ exports.Transport = class Transport extends Dispatch
 
   ##-----------------------------------------
 
+  reset : (w) ->
+    w = @_tcpw unless w
+    @_close w
+
+  ##-----------------------------------------
+  
   close : () ->
     @_explicit_close = true
     if @_tcpw
@@ -156,7 +162,7 @@ exports.Transport = class Transport extends Dispatch
 
   _close : (tcpw) ->
     # If an optional close hook was specified, call it here...
-    @hooks?.eof?()
+    @hooks?.eof? tcpw
     @_reconnect() if tcpw.close()
 
   ##-----------------------------------------
@@ -196,14 +202,17 @@ exports.Transport = class Transport extends Dispatch
 
     @_info "connection established"
 
-    # If optional hooks were specified, call them here
-    @hooks?.connected?()
 
     # The current generation needs to be wrapped into this hook;
     # this way we don't close the next generation of connection
     # in the case of a reconnect....
     w = new StreamWrapper x, @
     @_tcpw = w
+    
+    # If optional hooks were specified, call them here; give as an
+    # argument the new StreamWrapper so that way the subclass can
+    # issue closes on the connection
+    @hooks?.connected w
 
     #
     # MK 2012/12/20 -- Revisit me!
@@ -289,13 +298,19 @@ exports.RobustTransport = class RobustTransport extends Transport
   constructor : (sd, d = {}) ->
     super sd
     
-    { @queue_max, @warn_threshhold, @error_threshhold} = d
+    { @queue_max, @warn_threshhold, @error_threshhold } = d
 
-    # in seconds
+    # in seconds, provide a default of 1s for a reconnect delay
+    # if none was given.  Also, 0 is not a valid value.
     @reconnect_delay = if (x = d.reconnect_delay) then x else 1
+
+    # For @queue_max, a value of '0' means don't queue, but a null
+    # or unspecifed value means use a reasonable default, which we
+    # supply here as 1000.
+    @queue_max = 1000 unless @queue_max?
+    
     @_time_rpcs = @warn_threshhold? or @error_threshhold?
     
-    @queue_max = d.queue_max or 1000
     @_waiters = []
    
   ##-----------------------------------------
@@ -396,7 +411,7 @@ exports.RobustTransport = class RobustTransport extends Transport
     else if @_waiters.length < @queue_max
       @_waiters.push [ arg, cb ]
       @_info "Queuing call to #{meth} (num queued: #{@_waiters.length})"
-    else
+    else if @queue_max > 0
       @_warn "Queue overflow for #{meth}"
   
 ##=======================================================================
