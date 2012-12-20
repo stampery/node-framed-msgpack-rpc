@@ -132,7 +132,7 @@ exports.Transport = class Transport extends Dispatch
       err = null
     @_lock.release()
     cb err if cb
-    @_reconnect() if err?
+    @_reconnect true if err?
 
   ##-----------------------------------------
 
@@ -163,7 +163,7 @@ exports.Transport = class Transport extends Dispatch
   _close : (tcpw) ->
     # If an optional close hook was specified, call it here...
     @hooks?.eof? tcpw
-    @_reconnect() if tcpw.close()
+    @_reconnect false if tcpw.close()
 
   ##-----------------------------------------
 
@@ -194,7 +194,7 @@ exports.Transport = class Transport extends Dispatch
 
   # In other classes we can override this...
   # See 'RobustTransport'
-  _reconnect : () -> null
+  _reconnect : (first_time) -> null
  
   ##-----------------------------------------
   
@@ -315,9 +315,9 @@ exports.RobustTransport = class RobustTransport extends Transport
    
   ##-----------------------------------------
 
-  _reconnect : () ->
+  _reconnect : (first_time) ->
     # Do not reconnect on an explicit close
-    @_connect_loop true if not @_explicit_close
+    @_connect_loop first_time if not @_explicit_close
 
   ##-----------------------------------------
 
@@ -329,8 +329,8 @@ exports.RobustTransport = class RobustTransport extends Transport
   
   ##-----------------------------------------
  
-  _connect_loop : (re = false, cb) ->
-    prfx = if re then "re" else ""
+  _connect_loop : (first_time = false, cb) ->
+    prfx = if first_time then "" else "re"
     i = 0
     
     await @_lock.acquire defer()
