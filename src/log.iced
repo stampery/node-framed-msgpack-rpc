@@ -36,7 +36,7 @@ exports.Logger = class Logger
   fatal : (m) -> @_log m, "F" if @level <= L.FATAL
 
   _log : (m, l, ohook) ->
-    parts = [ @prefix ]
+    parts = [ @prefix ] if @prefix?
     parts.push "[#{l}]" if l
     parts.push @remote if @remote
     parts.push m
