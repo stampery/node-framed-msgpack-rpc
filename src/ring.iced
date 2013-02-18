@@ -28,6 +28,13 @@ exports.Ring = class Ring
   #-----------------------------------------
   
   grab : (n_wanted) ->
+
+    # Fail fast if there just aren't enough bytes...
+    return null unless n_wanted <= @len()
+
+    # fast-path is that we're already set up
+    return @_bufs[0] if @_bufs.length and @_bufs[0].length >= n_wanted
+
     n_grabbed = 0
     
     num_bufs = 0
