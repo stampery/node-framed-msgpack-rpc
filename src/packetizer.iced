@@ -1,5 +1,5 @@
 
-{unpack,pack} = require 'msgpack2'
+{unpack,pack} = require './pack'
 {Ring} = require './ring'
 
 ##=======================================================================
@@ -92,9 +92,10 @@ exports.Packetizer = class Packetizer
     # We now know how many bytes to suck in just to get the frame
     # header. If we can't get that much, we'll just have to wait!
     return @WAIT unless (f_full = @_ring.grab frame_len)?
-    
-    r = unpack f_full
-    
+   
+    [w,r] = unpack f_full
+    @_packetize_warning w if w?
+
     res = switch (typ = typeof r)
       when 'number'
       
@@ -121,7 +122,7 @@ exports.Packetizer = class Packetizer
     
     ret = if l > @_ring.len() or not (b = @_ring.grab l)?
       @WAIT
-    else if not (msg = unpack b)?
+    else if not ([pw,msg] = unpack b)? or not msg?
       @_packetize_error "bad encoding found in data/payload; len=#{l}"
       @ERR
     else if not is_array msg
@@ -133,6 +134,7 @@ exports.Packetizer = class Packetizer
       # Call down one level in the class hierarchy to the dispatcher
       @_dispatch msg
       @OK
+    @_packetize_warning pw if pw?
     return ret
   
   ##-----------------------------------------
