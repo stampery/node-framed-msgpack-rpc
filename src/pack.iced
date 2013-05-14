@@ -1,13 +1,15 @@
 try
   mp = require 'msgpack'
 catch e
-if not mp
-  try
-    pp = require 'purepack'
-  catch e
-if not mp? and not pp?
+
+if not mp?
   try
     mp = require 'msgpack4'
+  catch e
+
+if not mp?
+  try
+    pp = require 'purepack'
   catch e
 
 if not mp? and not pp?
