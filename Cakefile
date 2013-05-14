@@ -16,7 +16,7 @@ task 'build', 'build the whole jam', (cb) ->
   cb() if typeof cb is 'function'
 
 runIced = (args, cb) ->
-  proc =  spawn 'iced', args
+  proc =  spawn 'node_modules/.bin/iced', args
   proc.stderr.on 'data', (buffer) -> console.log buffer.toString()
   proc.stdout.on 'data', (buffer) -> console.log buffer.toString().trim()
   await proc.on 'exit', defer status 

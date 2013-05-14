@@ -12,7 +12,14 @@
     "lib": "lib"
   },
   "scripts" : {
-      	"test":	"iced test/all.iced"
+      	"test":	"node_modules/.bin/iced test/all.iced"
+  },
+  "dependencies" : {
+    "purepack" : "*"
+  },
+  "devDependencies" : {
+    "random-json" : "*",
+    "iced-coffee-script" : "*"
   },
   "licenses": [{
       "type": "MIT",

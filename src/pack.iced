@@ -7,11 +7,11 @@ if not mp
   catch e
 if not mp? and not pp?
   try
-    mp = require 'msgpack2'
+    mp = require 'msgpack4'
   catch e
 
 if not mp? and not pp?
-  throw new Error "Need either msgpack2 or purepack to run"
+  throw new Error "Need either msgpack, msgpack4 or purepack to run"
 
 ##==============================================================================
 
