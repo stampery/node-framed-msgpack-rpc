@@ -1,3 +1,5 @@
+
+
 fs = require 'fs'
 path = require 'path'
 colors = require 'colors'
@@ -39,7 +41,12 @@ class GlobalTester
 
   connect : (port, prog, cb, rtopts) ->
     err = null
-    opts = { port, host : "-" }
+
+    # We can also pass a Path to a unix domain socket here
+    if isNaN port
+      opts = { path : port }
+    else
+      opts = { port, host : "-" }
     if argv.t?
       opts.debug_hook = debug.make_hook String(argv.t), (m) ->
         console.log "TRACE-#{argv.t}: #{JSON.stringify m}"
