@@ -13,7 +13,7 @@ exports.Listener = class Listener
 
   ##-----------------------------------------
 
-  constructor : ({@port, @host, @TransportClass, log_obj}) ->
+  constructor : ({@port, @host, @path, @TransportClass, log_obj}) ->
     @TransportClass = Transport unless @TransportClass
     @set_logger log_obj
     @_children = new List
@@ -25,7 +25,10 @@ exports.Listener = class Listener
     l = log.new_default_logger()
     l.set_prefix "RPC-Server"
     h = @host or "0.0.0.0"
-    l.set_remote "#{h}:#{@port}"
+    if @port?
+      l.set_remote "#{h}:#{@port}"
+    else if @path?
+      l.set_remote @path
     return l
    
   ##-----------------------------------------
@@ -58,7 +61,7 @@ exports.Listener = class Listener
     c.setNoDelay true unless @do_tcp_delay
 
     x = new @TransportClass
-      tcp_stream : c
+      net_stream : c
       host : c.remoteAddress
       port : c.remotePort
       parent : @
@@ -104,13 +107,13 @@ exports.Listener = class Listener
   ##-----------------------------------------
 
   _make_server : () ->
-    @_tcp_server = net.createServer (c) => @_got_new_connection c
+    @_net_server = net.createServer (c) => @_got_new_connection c
 
   ##-----------------------------------------
 
   close : (cb) ->
-    await @_tcp_server.close defer() if @_tcp_server
-    @_tcp_server = null
+    await @_net_server.close defer() if @_net_server
+    @_net_server = null
     cb()
  
   ##-----------------------------------------
@@ -122,14 +125,14 @@ exports.Listener = class Listener
 
   # A sensible default handler
   handle_error : (err) ->
-    @_tcp_server = null
+    @_net_server = null
     @log_obj.error "error in listener: #{err}"
    
   ##-----------------------------------------
 
   _set_hooks : () ->
-    @_tcp_server.on 'error', (err) => @handle_error err
-    @_tcp_server.on 'close', (err) => @handle_close()
+    @_net_server.on 'error', (err) => @handle_error err
+    @_net_server.on 'close', (err) => @handle_close()
    
   ##-----------------------------------------
 
@@ -138,8 +141,9 @@ exports.Listener = class Listener
     
     [ OK, ERR ] = [0..1]
     rv = new iced.Rendezvous
-    x = @_tcp_server
-    x.listen @port, @host
+    x = @_net_server
+    if @port? then x.listen @port, @host
+    else           x.listen @path
     
     x.on 'error',     rv.id(ERR).defer err
     x.on 'listening', rv.id(OK).defer()
@@ -150,7 +154,7 @@ exports.Listener = class Listener
       @_set_hooks()
     else
       @log_obj.error err
-      @_tcp_server = null
+      @_net_server = null
       
     cb err
 

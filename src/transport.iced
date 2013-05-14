@@ -12,36 +12,37 @@ dbg = require './debug'
 # A shared wrapper object for which close is idempotent
 # 
 class StreamWrapper
-  constructor : (@_tcp_stream, @_parent) ->
+  constructor : (@_net_stream, @_parent) ->
     @_generation = @_parent.next_generation()
     @_write_closed_warn = false
 
   # Return true if we did the actual close, and false otherwise
   close : ->
     ret = false
-    if (x = @_tcp_stream)?
+    if (x = @_net_stream)?
       ret = true
-      @_tcp_stream = null
+      @_net_stream = null
       @_parent._dispatch_reset()
       @_parent._packetizer_reset()
       x.end()
     return ret
 
   write : (msg, enc) ->
-    if @_tcp_stream
-      @_tcp_stream.write msg, enc
+    if @_net_stream
+      @_net_stream.write msg, enc
     else if not @_write_closed_warn
       @_write_closed_warn = true
       @_parent._warn "write on closed socket..."
 
-  stream         : -> @_tcp_stream
-  is_connected   : -> !! @_tcp_stream
+  stream         : -> @_net_stream
+  is_connected   : -> !! @_net_stream
   get_generation : -> @_generation
 
   remote_address : () ->
-    if @_tcp_stream then @_tcp_stream.remoteAddress else null
+    if @_net_stream then @_net_stream.remoteAddress else null
   remote_port : () ->
-    if @_tcp_stream then @_tcp_stream.remotePort else null
+    if @_net_stream then @_net_stream.remotePort else null
+  
 
 ##=======================================================================
 
@@ -51,14 +52,15 @@ exports.Transport = class Transport extends Dispatch
   # Public API
   # 
 
-  constructor : ({ @port, @host, @tcp_opts, tcp_stream, @log_obj,
-                   @parent, @do_tcp_delay, @hooks, dbgr}) ->
+  constructor : ({ @port, @host, @net_opts, net_stream, @log_obj,
+                   @parent, @do_tcp_delay, @hooks, dbgr, @path}) ->
     super
     
     @host = "localhost" if not @host or @host is "-"
-    @tcp_opts = {} unless @tcp_opts
-    @tcp_opts.host = @host
-    @tcp_opts.port = @port
+    @net_opts = {} unless @net_opts
+    @net_opts.host = @host
+    @net_opts.port = @port
+    @net_opts.path = @path
     @_explicit_close = false
     
     @_remote_str = [ @host, @port].join ":"
@@ -75,10 +77,10 @@ exports.Transport = class Transport extends Dispatch
     # on us (due to errors), but the second closing the reconnected
     # stream, rather than the original stream.  This level of
     # indirection solves this.
-    @_tcpw = null
+    @_netw = null
 
-    # potentially set @_tcpw to be non-null
-    @_activate_stream tcp_stream if tcp_stream
+    # potentially set @_netw to be non-null
+    @_activate_stream net_stream if net_stream
 
   ##-----------------------------------------
 
@@ -100,12 +102,12 @@ exports.Transport = class Transport extends Dispatch
  
   ##-----------------------------------------
 
-  get_generation : () -> if @_tcpw then @_tcpw.get_generation() else -1 
+  get_generation : () -> if @_netw then @_netw.get_generation() else -1 
  
   ##-----------------------------------------
 
-  remote_address : () -> if @_tcpw? then @_tcpw.remote_address() else null
-  remote_port : () -> if @_tcpw? then @_tcpw.remote_port() else null
+  remote_address : () -> if @_netw? then @_netw.remote_address() else null
+  remote_port : () -> if @_netw? then @_netw.remote_port() else null
    
   ##-----------------------------------------
 
@@ -120,7 +122,7 @@ exports.Transport = class Transport extends Dispatch
    
   ##-----------------------------------------
 
-  is_connected : () -> @_tcpw?.is_connected()
+  is_connected : () -> @_netw?.is_connected()
    
   ##-----------------------------------------
 
@@ -137,16 +139,16 @@ exports.Transport = class Transport extends Dispatch
   ##-----------------------------------------
 
   reset : (w) ->
-    w = @_tcpw unless w
+    w = @_netw unless w
     @_close w
 
   ##-----------------------------------------
   
   close : () ->
     @_explicit_close = true
-    if @_tcpw
-      @_tcpw.close()
-      @_tcpw = null
+    if @_netw
+      @_netw.close()
+      @_netw = null
 
   #
   # /Public API
@@ -160,16 +162,16 @@ exports.Transport = class Transport extends Dispatch
   
   ##-----------------------------------------
 
-  _close : (tcpw) ->
+  _close : (netw) ->
     # If an optional close hook was specified, call it here...
-    @hooks?.eof? tcpw
-    @_reconnect false if tcpw.close()
+    @hooks?.eof? netw
+    @_reconnect false if netw.close()
 
   ##-----------------------------------------
 
-  _handle_error : (e, tcpw) ->
+  _handle_error : (e, netw) ->
     @_error e
-    @_close tcpw
+    @_close netw
    
   ##-----------------------------------------
   
@@ -178,13 +180,13 @@ exports.Transport = class Transport extends Dispatch
     # if we grab the one in the this object.  A packetizer
     # error will happen before any errors in the underlying
     # stream
-    @_handle_error "In packetizer: #{err}", @_tcpw
+    @_handle_error "In packetizer: #{err}", @_netw
     
   ##-----------------------------------------
 
-  _handle_close : (tcpw) ->
+  _handle_close : (netw) ->
     @_info "EOF on transport" unless @_explicit_close
-    @_close tcpw
+    @_close netw
     
     # for TCP connections that are children of Listeners,
     # we close the connection here and disassociate
@@ -207,7 +209,7 @@ exports.Transport = class Transport extends Dispatch
     # this way we don't close the next generation of connection
     # in the case of a reconnect....
     w = new StreamWrapper x, @
-    @_tcpw = w
+    @_netw = w
     
     # If optional hooks were specified, call them here; give as an
     # argument the new StreamWrapper so that way the subclass can
@@ -231,7 +233,7 @@ exports.Transport = class Transport extends Dispatch
   ##-----------------------------------------
   
   _connect_critical_section : (cb) ->
-    x = net.connect @tcp_opts
+    x = net.connect @net_opts
     x.setNoDelay true unless @do_tcp_delay
 
     # Some local switch codes....
@@ -264,10 +266,10 @@ exports.Transport = class Transport extends Dispatch
   # To fulfill the packetizer contract, the following...
   
   _raw_write : (msg, encoding) ->
-    if not @_tcpw?
+    if not @_netw?
       @_warn "write attempt with no active stream"
     else
-      @_tcpw.write msg, encoding
+      @_netw.write msg, encoding
  
   ##-----------------------------------------
 
