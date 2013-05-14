@@ -1,6 +1,6 @@
 {
   "name" : "framed-msgpack-rpc",
-  "version" : "1.0.19",
+  "version" : "1.0.20",
   "description" : "Framed Msgpack RPC for node.js",
   "homepage" : "https://github.com/maxtaco/node-framed-msgpack-rpc",
   "main" : "./lib/main",
