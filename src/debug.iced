@@ -35,7 +35,6 @@ SF =
   a : F.REMOTE
   s : F.SEQID
   t : F.TIMESTAMP
-  e : F.ERROR
   p : F.ARG
   r : F.RES
   e : F.ERR

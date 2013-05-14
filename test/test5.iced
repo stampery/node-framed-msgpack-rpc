@@ -1,5 +1,6 @@
 {RobustTransport,Client} = require '../src/main'
 {fork} = require 'child_process'
+path = require 'path'
 
 ## Do the same test as test1, a second time, must to make
 ## sure that we can rebind a second time...
@@ -8,9 +9,11 @@ PORT = 8881
 n = null
 restart = true
 
+icmd = path.join __dirname, "..", "node_modules", ".bin", "iced"
+
 jenky_server_loop =  (cb) ->
   while restart
-    n = fork __dirname + "/jenky_server.iced"
+    n = fork path.join(__dirname,"jenky_server.iced"), [], { execPath : icmd }
     await n.on 'message', defer msg
     if cb?
       t = cb

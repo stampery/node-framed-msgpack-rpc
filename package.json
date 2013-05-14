@@ -1,6 +1,6 @@
 {
   "name" : "framed-msgpack-rpc",
-  "version" : "1.0.18",
+  "version" : "1.0.19",
   "description" : "Framed Msgpack RPC for node.js",
   "homepage" : "https://github.com/maxtaco/node-framed-msgpack-rpc",
   "main" : "./lib/main",
@@ -12,10 +12,14 @@
     "lib": "lib"
   },
   "scripts" : {
-      	"test":	"iced test/all.iced"
+      	"test":	"node_modules/.bin/iced test/all.iced"
   },
-  "dependencies" : { 
-        "msgpack2" : ">=0.1.10"
+  "dependencies" : {
+    "purepack" : "*"
+  },
+  "devDependencies" : {
+    "random-json" : "*",
+    "iced-coffee-script" : "*"
   },
   "licenses": [{
       "type": "MIT",
