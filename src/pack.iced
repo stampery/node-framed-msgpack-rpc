@@ -19,7 +19,8 @@ if not mp? and not pp?
 
 _opts = {}
 
-exports.set_opts = set_opts = (o) -> _pack_opts = o
+exports.set_opt = set_opt = (k,v) -> _opts[k] = v
+exports.set_opts = set_opts = (o) -> _opts = o
 
 # If we want to use byte arrays, we need purepack and not msgpack4 or msgpack!
 exports.use_byte_arrays = () ->
@@ -27,7 +28,7 @@ exports.use_byte_arrays = () ->
     pp = require 'purepack'
   if pp?
     mp = null
-    set_opts { byte_arrays : true } 
+    set_opt byte_array, true
   else
     throw new Error "Cannot use_byte_arrays without purepack!"
 
