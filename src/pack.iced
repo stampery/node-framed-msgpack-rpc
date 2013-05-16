@@ -25,8 +25,11 @@ exports.set_opts = set_opts = (o) -> _pack_opts = o
 exports.use_byte_arrays = () ->
   if not pp?
     pp = require 'purepack'
-  mp = null
-  set_opts { byte_arrays : true } 
+  if pp?
+    mp = null
+    set_opts { byte_arrays : true } 
+  else
+    throw new Error "Cannot use_byte_arrays without purepack!"
 
 exports.pack = (b) ->
   ret = if mp then mp.pack b
