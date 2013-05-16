@@ -28,7 +28,7 @@ exports.use_byte_arrays = () ->
     pp = require 'purepack'
   if pp?
     mp = null
-    set_opt byte_array, true
+    set_opt "byte_arrays", true
   else
     throw new Error "Cannot use_byte_arrays without purepack!"
 
