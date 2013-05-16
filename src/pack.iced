@@ -19,7 +19,12 @@ if not mp? and not pp?
 
 _opts = {}
 
-exports.set_opts = (o) -> _pack_opts = o
+exports.set_opts = set_opts = (o) -> _pack_opts = o
+
+exports.use_byte_arrays = () ->
+  if not pp?
+    pp = require 'purepack'
+    set_opts { byte_arrays : true } 
 
 exports.pack = (b) ->
   ret = if mp then mp.pack b
