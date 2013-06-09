@@ -100,10 +100,10 @@ It should work to just install with npm:
     npm install -g framed-msgpack-rpc
 
 If you install by hand, you will need to install the one dependency,
-which is the [Msgpack C bindings](http://github.com/JulesAU/node-msgpack),
-available as `msgpack2` on npm:
+which is the [the Purepack Msgpack library](http://github.com/maxtaco/purepack),
+available as `purepack` on npm:
 
-    npm install -g msgpack2
+    npm install -g purepack
 
 
 ## Full API Documentation
@@ -143,6 +143,7 @@ Make a new TCP transport, where `opts` are:
 
 * `port` - the port to connect to
 * `host` - the host to connect to, or `localhost` if none was given
+* `path` - the path to connect to, if using Unix domain sockets
 * `tcp_opts` - TCP options to pass to node's `net.connect` method, which 
  is `{}` by default
 * `log_obj` - An object to use to log info, warnings, and errors on this 
@@ -400,6 +401,7 @@ For `opts`, the fields are:
 
 * `port` - A port to bind to
 * `host` - A host IP to bind to
+* `path` - A socket path to bind to, if being run on as Unix domain socket.
 * `TransportClass` - A transport class to use when allocating a new
  Transport for an incoming connection.  By default, it's `transport.Transport`
 * `log_obj` - A log object to log errors, and also to assign to 

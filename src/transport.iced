@@ -181,6 +181,9 @@ exports.Transport = class Transport extends Dispatch
     # error will happen before any errors in the underlying
     # stream
     @_handle_error "In packetizer: #{err}", @_netw
+
+  _packetize_warning : (w) ->
+    @_warn "In packetizer: #{w}"
     
   ##-----------------------------------------
 
