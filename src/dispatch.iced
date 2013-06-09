@@ -137,7 +137,8 @@ exports.Dispatch = class Dispatch extends Packetizer
       await (@_invocations[seqid] = defer(error,result) )
 
       debug_msg.response(error, result).call() if debug_msg
-        
+  
+    error = new Error(error) if error? and typeof error is 'string'
     cb error, result if cb
 
   ##-----------------------------------------
@@ -146,7 +147,7 @@ exports.Dispatch = class Dispatch extends Packetizer
     inv = @_invocations
     @_invocations = {}
     for key,cb of inv
-      cb "EOF from server", {}
+      cb new Error("EOF from server"), {}
    
   ##-----------------------------------------
 

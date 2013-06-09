@@ -409,7 +409,7 @@ exports.RobustTransport = class RobustTransport extends Transport
       else                super arg, cb
     else if @_explicit_close
       @_warn "invoke call after explicit close"
-      cb "socket was closed", {}
+      cb new Error("socket was closed"), {}
     else if @_waiters.length < @queue_max
       @_waiters.push [ arg, cb ]
       @_info "Queuing call to #{meth} (num queued: #{@_waiters.length})"
