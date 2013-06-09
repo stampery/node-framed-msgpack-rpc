@@ -41,7 +41,7 @@ test_A = (T, cb) ->
     
     bad = "XXyyXX"
     await c.invoke bad, {}, defer err, res
-    T.search err, /unknown method/, "method '#{bad}' should not be found"
+    T.search err.toString(), /unknown method/, "method '#{bad}' should not be found"
     
     x.close()
     x = c = null
