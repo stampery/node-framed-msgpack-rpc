@@ -15,11 +15,13 @@
       	"test":	"node_modules/.bin/iced test/all.iced"
   },
   "dependencies" : {
-    "purepack" : "*"
+    "purepack" : "<1"
   },
   "devDependencies" : {
     "random-json" : "*",
-    "iced-coffee-script" : "*"
+    "iced-coffee-script" : "*",
+    "deep-equal" : "*",
+    "optimist" : "*"
   },
   "licenses": [{
       "type": "MIT",
