@@ -1,30 +1,33 @@
 {
-  "name" : "framed-msgpack-rpc",
-  "version" : "1.1.1",
-  "description" : "Framed Msgpack RPC for node.js",
-  "homepage" : "https://github.com/maxtaco/node-framed-msgpack-rpc",
-  "main" : "./lib/main",
-  "repository" : { 
-    "type" : "git",
-     "url" : "https://github.com/maxtaco/node-framed-msgpack-rpc.git"
+  "name": "framed-msgpack-rpc",
+  "version": "1.1.1",
+  "description": "Framed Msgpack RPC for node.js",
+  "homepage": "https://github.com/maxtaco/node-framed-msgpack-rpc",
+  "main": "./lib/main",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maxtaco/node-framed-msgpack-rpc.git"
   },
   "directories": {
     "lib": "lib"
   },
-  "scripts" : {
-      	"test":	"node_modules/.bin/iced test/all.iced"
+  "scripts": {
+    "test": "node_modules/.bin/iced test/all.iced"
   },
-  "dependencies" : {
-    "purepack" : ">=1"
+  "dependencies": {
+    "purepack": ">=1"
   },
-  "devDependencies" : {
-    "random-json" : "*",
-    "iced-coffee-script" : "*",
-    "deep-equal" : "*",
-    "optimist" : "*"
+  "devDependencies": {
+    "colors": "~0.6.2",
+    "random-json": "*",
+    "iced-coffee-script": "*",
+    "deep-equal": "*",
+    "optimist": "*"
   },
-  "licenses": [{
+  "licenses": [
+    {
       "type": "MIT",
       "url": "http://www.opensource.org/licenses/mit-license.php"
-  }]
+    }
+  ]
 }
