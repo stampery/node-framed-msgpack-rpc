@@ -341,14 +341,17 @@ exports.RobustTransport = class RobustTransport extends Transport
     await @_lock.acquire defer()
 
     go = true
+    first_through_loop = true
+
     while go
-      i++
       if @is_connected() or @_explicit_close
         go = false
-      else if (i is 1) and not first_time
+      else if first_through_loop and not first_time
+        first_through_loop = false
         @_info "reconnect loop started, initial delay..."
         await setTimeout defer(), @reconnect_delay*1000
       else
+        i++
         @_info "#{prfx}connecting (attempt #{i})"
         await @_connect_critical_section defer err
         if err?
