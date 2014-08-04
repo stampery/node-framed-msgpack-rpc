@@ -15,7 +15,7 @@
     "test": "node_modules/.bin/iced test/all.iced"
   },
   "dependencies": {
-    "iced-runtime": "0.0.1",
+    "iced-runtime": ">=0.0.1",
     "purepack": ">=1"
   },
   "devDependencies": {
