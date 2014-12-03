@@ -12,7 +12,7 @@ exports.collect_hooks = collect_hooks =  (proto) ->
     if (m = k.match re)?
       hooks[m[1]] = v
   return hooks
-    
+
 ##=======================================================================
 
 exports.Server = class Server extends Listener
@@ -24,7 +24,7 @@ exports.Server = class Server extends Listener
   Note you can pass a TransportClass to use instead of the Transport.
   It should be a subclass of Transport.
   """
-  
+
   #-----------------------------------------
 
   constructor : (d) ->
@@ -35,7 +35,7 @@ exports.Server = class Server extends Listener
 
   got_new_connection : (c) ->
     # c inherits from Dispatch, so it should have an add_programs
-    # method.  We're just going to shove into it 
+    # method.  We're just going to shove into it
     c.add_programs @programs
 
 ##=======================================================================
@@ -45,6 +45,8 @@ exports.SimpleServer = class SimpleServer extends Listener
   constructor : (d) ->
     super d
     @_program = d.program
+
+  get_hook_wrapper : () -> null
 
   got_new_connection : (c) ->
     @_hooks = collect_hooks @
@@ -61,6 +63,7 @@ exports.SimpleServer = class SimpleServer extends Listener
   make_new_transport : (c) ->
     x = super c
     x.get_handler_this = (m) => @
+    x.get_hook_wrapper = () => @get_hook_wrapper()
     return x
 
 ##=======================================================================
@@ -75,7 +78,7 @@ exports.SimpleServer = class SimpleServer extends Listener
 #
 # Then they will be automatically rolled up into a program, handled by
 # this class.
-# 
+#
 exports.Handler = class Handler
   constructor : ({@transport, @server}) ->
 
@@ -102,18 +105,18 @@ exports.ContextualServer = class ContextualServer extends Listener
 
   got_new_connection : (c) ->
     # c inherits from Dispatch, so it should have an add_programs
-    # method.  We're just going to shove into it 
+    # method.  We're just going to shove into it
     c.add_programs @programs
-      
+
   #-----------------------------------------
 
   make_new_transport : (c) ->
     x = super c
-    
+
     ctx = {}
     for n,klass of @classes
       ctx[n] = new klass { transport : x, server: @ }
-    
+
     # This is sort of a hack, but it should work and override the
     # prototype.  The alternative is to bubble classes up and down the
     # class hierarchy, but this is much less code.
@@ -122,7 +125,7 @@ exports.ContextualServer = class ContextualServer extends Listener
       # This really ought not happen
       throw new Error "Couldn't find prog #{pn}" unless (obj = ctx[pn])?
       return obj
-    
+
     return x
 
 ##=======================================================================

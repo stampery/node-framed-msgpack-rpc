@@ -9,7 +9,7 @@ iced = require('./iced').runtime
 exports.Reponse = class Reponse
   constructor : (@dispatch, @seqid) ->
     @debug_msg = null
-    
+
   result : (res) ->
     @debug_msg.response(null, res).call() if @debug_msg
     @dispatch.respond @seqid, null, res
@@ -38,7 +38,7 @@ exports.Dispatch = class Dispatch extends Packetizer
   ##-----------------------------------------
 
   set_debugger : (d) -> @_dbgr = d
- 
+
   ##-----------------------------------------
 
   _dispatch : (msg) ->
@@ -65,19 +65,19 @@ exports.Dispatch = class Dispatch extends Packetizer
 
   _dispatch_handle_response : ({seqid, error, result}) ->
     @_call_cb { seqid, error, result }
-    
+
   ##-----------------------------------------
-  
+
   _call_cb : ({seqid, error, result}) ->
     cb = @_invocations[seqid]
     if cb
       delete @_invocations[seqid]
       cb error, result
-   
+
   ##-----------------------------------------
 
-  cancel : (seqid) -> @_call_cb { seqid, error : "cancelled", result : null } 
- 
+  cancel : (seqid) -> @_call_cb { seqid, error : "cancelled", result : null }
+
   ##-----------------------------------------
 
   _next_seqid : () ->
@@ -86,31 +86,31 @@ exports.Dispatch = class Dispatch extends Packetizer
     return ret
 
   ##-----------------------------------------
-  
+
   make_method : (prog, meth) ->
     if prog then [ prog, meth ].join "." else meth
- 
+
   ##-----------------------------------------
 
   respond : (seqid, error, result) ->
     msg = [ @RESPONSE, seqid, error, result ]
     @send msg
-   
+
   ##-----------------------------------------
 
   invoke : ({program, method, args, notify}, cb, out) ->
 
     method = @make_method program, method
-    
+
     seqid = @_next_seqid()
-    
+
     if notify
       type = @NOTIFY
       dtype = dbg.constants.type.CLIENT_NOTIFY
     else
       type = @INVOKE
       dtype = dbg.constants.type.CLIENT_INVOKE
-      
+
     msg = [ type, seqid, method, args ]
 
     if @_dbgr
@@ -124,8 +124,8 @@ exports.Dispatch = class Dispatch extends Packetizer
         type : dtype
       }
       debug_msg.call()
-        
-    
+
+
     # Down to the packetizer, which will jump back up to the Transport!
     @send msg
 
@@ -133,11 +133,11 @@ exports.Dispatch = class Dispatch extends Packetizer
 
       if out?
         out.cancel = () => @cancel seqid
-        
+
       await (@_invocations[seqid] = defer(error,result) )
 
       debug_msg.response(error, result).call() if debug_msg
-        
+
     cb error, result if cb
 
   ##-----------------------------------------
@@ -147,7 +147,7 @@ exports.Dispatch = class Dispatch extends Packetizer
     @_invocations = {}
     for key,cb of inv
       cb "EOF from server", {}
-   
+
   ##-----------------------------------------
 
   _serve : ({method, param, response}) ->
@@ -169,13 +169,16 @@ exports.Dispatch = class Dispatch extends Packetizer
       response.debug_msg = debug_msg if response
       debug_msg.call()
 
-    if pair then pair[1].call pair[0], param, response, @
+    if pair? and (hw = @get_hook_wrapper())?
+      hw { method : pair[1], thisobj : pair[0], param, response, dispatch : @ }
+    else if pair then pair[1].call pair[0], param, response, @
     else if response? then response.error "unknown method: #{method}"
-      
+
   ##-----------------------------------------
 
   # please override me!
   get_handler_this : (m) -> @
+  get_hook_wrapper : () -> null
 
   # please override me!
   get_handler_pair : (m) ->
