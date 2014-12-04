@@ -4,13 +4,13 @@
 Version: GnuPG/MacGPG2 v2
 Comment: GPGTools - https://gpgtools.org
 
-iQEcBAABCgAGBQJUf4cBAAoJEJgKPw0B/gTf+K4H/RDZEIoS1fwXxw8KLc2nAm4W
-cCks8rrsVz9Y/+GjBPBx9J3NG+LbWsk4GORfKQl/2jCHoaB7NuhSdVZhVsDehP2I
-YEVehnIw8COC56E1Tqq+IUUxAho5mq5edxXl7eKY69Ca7fFOSYyR3jmHIjYO6PrT
-+p9msq5TCoAqmIwLAZ34q04jukkGgk5DSHW5+aIUlYMTXonbime4Avvkjvu0Kklc
-9bcsafnBQoBsVnESrZcamvQJhz6crHN7NdqfGJnFHcXGNV1kSmy/YW6a/7+x6CQN
-mEM4Jrni1O307jPoARioLBwIh6t8OvnuhOwe4OvKfFBoeRg0jWIJgawc5vXFSj4=
-=ILkj
+iQEcBAABCgAGBQJUgI5ZAAoJEJgKPw0B/gTfEm0IALN4TOZqx485SeCfAE/NPnIT
+iu25YyQtnU4gZyHXhuuiuMSw4yxV7FZC8yBmX4GYAMqX0EKMILGq1Yb7iXlfhQfN
+Cfjc5TMTePUj5oUpKyks+qHI/+2GI8QfQxtasZNMn5tNCJ7d9w+b5vz9Kh/IT1/e
+KQIlCpr7FmklXr2jN+nw7TPoL9+4Q+33wLRdgT9poHJ9WnpJyDs3Mc1c6DPvokmI
+8ioIuZNvHvLkhLG5iLZbtkoBlRHWGHJHXvQ3f4MjYsaRJw+HZfnVEjlb3iclCutF
+WeW3+ebz31mT6uBBabbyI49nA3lhWI/D+F/OSSov5dSBUxB5Zjc7uVSNyOcRJt0=
+=79NJ
 -----END PGP SIGNATURE-----
 
 ```
@@ -36,7 +36,7 @@ size   exec  file                          contents
 1132             list.js                   4b6ee1c127b22dced434ff72a872e5d899f3e1b84fd68d4a5993cc84579316b6
 9428             listener.js               c4a037ef3b2816b7a13f8208eab020b8c9a2ca22f39cf0fc71405277f5bc94d7
 3236             lock.js                   b6de36e63cd6f5b7598cd99780b93a41200ac459dd49a3fb1813f50586b39028
-2466             log.js                    21a521df66a020ac53317bffb299730c90b117900f82195c9e3570df60ec3190
+2764             log.js                    53941c0eee0c974fad92eb9d5fe015ba04e7509d5429fd68fbca4a4b7cb85160
 1358             main.js                   4cf6ec12e7297f79916ca43dc1a7759d5ee10b56388585f4034e74693cd74785
 1112             pack.js                   dea63833f986987898617c896d0314dc8b7f98e0291badca74cc5ad93b59b9c5
 4563             packetizer.js             2568bf361f4caa6c610b219c5ca722e606c7d254ead2749c60b3bb3b68e8a05c
@@ -44,8 +44,8 @@ size   exec  file                          contents
 4485             server.js                 8208eb10218f8b314f4dd4ce3f082721eea1a2b3df1fc59aa4452c830ca579bc
 984              timer.js                  ff8e5eeedd441ee1bcc07db4a80201c9c93ec542b13acf0ab39ba6e3db4a3cf4
 23574            transport.js              66d03982e1cf5767e0066986a9cc42b946e37152df6830bf5b423ad111d2cc71
-26               version.js                bb43f4d99a12b5741b032d5c1d2359dd57b8f5d2822c2dbde666df8b4014d311
-768            package.json                6c05f345bc716c668fa4611911023e954cfaefc69a862b70627ddc6121e9de50
+26               version.js                7ca44777179a6a19dc7c127d1f2ea5cac8b3213b46881c984777a059c738f3ae
+768            package.json                033b5486e9698a6b4a580a25c3a2ea08caceb6e9b91e090eaa0e0bad186df32d
                src/                                                                                        
 714              client.iced               6640bbae283ba92516da749894b7740dc6e10db9af48289282e59da045b1498e
 4560             debug.iced                7b2b81b8dae1729ba3d29de7dfac2960d285b7adc7359c4ccf2556bf12b6f70f
@@ -54,7 +54,7 @@ size   exec  file                          contents
 947              list.iced                 2b0a49c5aaef4b5f1df984e6350167579cdb161bb4da172cc8b1ad7e510ae75c
 4355             listener.iced             ce4712496eebcca2d2d36f17f12efec48b9dc88754429d34bc31d40cc83624ba
 1151             lock.iced                 85141295f022a70d8922fad40a5dba1df877b1bb0ca973c4d87d84f66f82ba49
-1802             log.iced                  23fe07e7381d8c006d32150c9da32cf965aa9e4f72c08b79545d8b852b1fb1f6
+2062             log.iced                  a71934a2b7dec883f077efb8b8fb9e8649fb7581a1a48895b603361343fd5bcd
 1274             main.iced                 0904ab59c99a188250b0a92b53a732dfdb20f3a51c1232ab44e55749e44d4be7
 835              pack.iced                 3ca794db9f89a1d924731c558a9a6e7018c2cd529c5eee6dfb7b098e89be2a7c
 4392             packetizer.iced           aa17f8a495043e87b0c3167aeba218b3e5325c77f85dd4130bec3e55c358ae57
