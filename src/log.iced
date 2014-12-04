@@ -1,4 +1,6 @@
 
+util = require 'util'
+
 #
 # The standard logger for saying that things went wrong, or state changed,
 # inside the RPC system.  You can of course change this to be whatever you'd
@@ -15,6 +17,14 @@ exports.levels = L =
   TOP : 6
 
 default_level = L.INFO
+
+##=======================================================================
+
+stringify = (o) ->
+  if not o? then ""
+  else if Buffer.isBuffer(o) then o.toString('utf8')
+  else if util.isError(o) then o.toString()
+  else ("" + o)
 
 ##=======================================================================
 
@@ -40,14 +50,14 @@ exports.Logger = class Logger
     parts.push @prefix if @prefix?
     parts.push "[#{l}]" if l
     parts.push @remote if @remote
-    parts.push m
+    parts.push stringify m
     ohook = @output_hook unless ohook
     ohook parts.join " "
 
   make_child : (d) -> return new Logger d
 
 ##=======================================================================
- 
+
 default_logger_class = Logger
 
 ##=======================================================================
