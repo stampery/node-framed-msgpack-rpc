@@ -72,6 +72,7 @@ exports.Dispatch = class Dispatch extends Packetizer
     cb = @_invocations[seqid]
     if cb
       delete @_invocations[seqid]
+      error = new Error(error) if typeof(error) is 'string'
       cb error, result
 
   ##-----------------------------------------
@@ -146,7 +147,7 @@ exports.Dispatch = class Dispatch extends Packetizer
     inv = @_invocations
     @_invocations = {}
     for key,cb of inv
-      cb "EOF from server", {}
+      cb new Error("EOF from server"), {}
 
   ##-----------------------------------------
 

@@ -6,6 +6,7 @@ colors = require 'colors'
 deep_equal = require 'deep-equal'
 {debug,log,Logger,RobustTransport,Transport,Client} = require '../src/main'
 iced = require('../src/iced').runtime
+util = require 'util'
 
 ##-----------------------------------------------------------------------
 
@@ -22,9 +23,9 @@ ARROW = "\u2192"
 ##-----------------------------------------------------------------------
 
 class VLogger extends Logger
-  
+
   @my_ohook : (c) -> (m) -> console.log " #{ARROW} #{m}"[c]
-  
+
   info : (m) -> @_log m, "I",  VLogger.my_ohook "cyan"
   warn : (m) -> @_log m, "W",  VLogger.my_ohook "yellow"
   error : (m) -> @_log m, "E", VLogger.my_ohook "red"
@@ -66,8 +67,10 @@ class TestCase
     @_ok = true
 
   logger : () -> @_global.logger()
-    
+
   search : (s, re, msg) ->
+    if util.isError(s)
+      s = s.toString()
     @assert (s? and s.search(re) >= 0), msg
 
   assert : (f, what) ->
@@ -100,13 +103,13 @@ class TestCase
     await @_global.connect port, prog, defer(e,x,c), rtopts
     @error e if e
     cb x,c
-   
+
 ##-----------------------------------------------------------------------
 
 class Runner
 
   ##-----------------------------------------
-  
+
   constructor : ->
     @_files = []
     @_launches = 0
@@ -118,13 +121,13 @@ class Runner
     @_global_tester = new GlobalTester
 
   ##-----------------------------------------
-  
+
   err : (e) ->
     console.log e.red
     @_rc = -1
 
   ##-----------------------------------------
-  
+
   load_files : (cb) ->
     @_dir = path.dirname __filename
     if argv._.length
@@ -139,13 +142,13 @@ class Runner
       else
         ok = true
         re = /test.*\.(iced|coffee)$/
-        for file in files when file.match(re) 
+        for file in files when file.match(re)
           @_files.push file
         @_files.sort()
     cb ok
-  
+
   ##-----------------------------------------
-  
+
   run_files : (cb) ->
     for f in @_files
       await @run_file f, defer()
@@ -154,9 +157,9 @@ class Runner
   ##-----------------------------------------
 
   create_tester : () -> new TestCase @_global_tester
-   
+
   ##-----------------------------------------
-  
+
   run_code : (f, code, cb) ->
     if code.init?
       await code.init defer(err), @_global_tester
@@ -183,7 +186,7 @@ class Runner
     cb()
 
   ##-----------------------------------------
-  
+
   run_file : (f, cb) ->
     try
       dat = require path.join @_dir, f
@@ -199,7 +202,7 @@ class Runner
     await @run_files defer() if ok
     @report()
     cb @_rc
-   
+
   ##-----------------------------------------
 
   report : () ->
@@ -207,16 +210,16 @@ class Runner
       console.log "#{FUUUU} Failure due to test configuration issues".red
     @_rc = -1 unless @_tests is @_successes
     f = if @_rc is 0 then colors.green else colors.red
-    
+
     console.log f "Tests: #{@_successes}/#{@_tests} passed".bold
-    
+
     if @_n_files isnt @_n_good_files
-      console.log (" -> Only #{@_n_good_files}/#{@_n_files}" + 
+      console.log (" -> Only #{@_n_good_files}/#{@_n_files}" +
          " files ran properly").red.bold
     return @_rc
-    
+
   ##-----------------------------------------
-  
+
 ##-----------------------------------------------------------------------
 
 runner = new Runner()

@@ -15,14 +15,14 @@ class P_v1 extends server.Handler
 ##-----------------------------------------------------------------------
 
 exports.init = (cb) ->
-  
-  s = new server.ContextualServer 
+
+  s = new server.ContextualServer
     path : SOCK
     classes :
       "P.1" : P_v1
 
   s.set_debugger new debug.Debugger debug.constants.flags.LEVEL_4
-        
+
   await s.listen defer err
   cb err
 
@@ -33,16 +33,16 @@ exports.test2 = (T, cb) -> test_A T, cb
 
 ##-----------------------------------------------------------------------
 
-test_A = (T, cb) -> 
+test_A = (T, cb) ->
   await T.connect SOCK, "P.1", defer x, c
-  if x 
+  if x
     await T.test_rpc c, "foo", { i : 4 } , { y : 6 }, defer()
     await T.test_rpc c, "bar", { j : 2, k : 7 }, { y : 14}, defer()
-    
+
     bad = "XXyyXX"
     await c.invoke bad, {}, defer err, res
-    T.search err, /unknown method/, "method '#{bad}' should not be found"
-    
+    T.search err.toString(), /unknown method/, "method '#{bad}' should not be found"
+
     x.close()
     x = c = null
   cb()
