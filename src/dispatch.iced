@@ -1,4 +1,3 @@
-
 {Packetizer} = require './packetizer'
 dbg = require './debug'
 E = require './errors'
@@ -73,7 +72,7 @@ exports.Dispatch = class Dispatch extends Packetizer
     cb = @_invocations[seqid]
     if cb
       delete @_invocations[seqid]
-      error = new Error(error) if typeof(error) is 'string'
+      error = @unwrap_incoming_error error
       cb error, result
 
   ##-----------------------------------------
@@ -185,7 +184,8 @@ exports.Dispatch = class Dispatch extends Packetizer
   get_handler_this : (m) -> @
   get_hook_wrapper : () -> null
 
-  wrap_outgoing_error : (s) -> s.toString()
+  wrap_outgoing_error   : (s) -> s.toString()
+  unwrap_incoming_error : (s) -> new Error(s) if typeof(s) is 'string'
 
   # please override me!
   get_handler_pair : (m) ->

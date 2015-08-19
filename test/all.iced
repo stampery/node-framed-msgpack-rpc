@@ -34,7 +34,9 @@ class VLogger extends Logger
 ##-----------------------------------------------------------------------
 
 if argv.d then log.set_default_logger_class VLogger
-else           log.set_default_level log.levels.TOP
+else
+  console.log "ok then, set it! #{log.levels.TOP}"
+  log.set_default_level log.levels.TOP
 
 ##-----------------------------------------------------------------------
 
