@@ -110,10 +110,12 @@ exports.test_2 = (T,cb) ->
     }
     await T.test_rpc c, "foo", { i : 20 }, { y : 200 }, defer()
 
-    # Now check that we've succesfully
+    # Now check that we've succesfully gotten an error, and the error
+    # went through the wrapping/unwrapping system as we expect
     await c.invoke "bar", {}, defer e2, res
     T.assert (e2 instanceof errors.UnknownMethodError), "the right error message"
     T.equal e2.method, "P.1.bar", "method name equality"
+
     x.close()
     x = c = null
 
