@@ -5,6 +5,7 @@ exports.transport    = transport    = require './transport'
 exports.log          = log          = require './log'
 exports.debug        = debug        = require './debug'
 exports.pack         = pack         = require './pack'
+exports.errors       = errors       = require './errors'
 
 exports.dispatch  = require './dispatch'
 exports.listener  = require './listener'
@@ -33,6 +34,6 @@ exports.at_version = (v) ->
   if A.length is 0 and B.length > 0 then false
   else if A.length > 0 and B.length is 0 then true
   else true
-    
+
 #
 ##=======================================================================

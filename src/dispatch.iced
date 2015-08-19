@@ -1,6 +1,7 @@
 
 {Packetizer} = require './packetizer'
 dbg = require './debug'
+E = require './errors'
 
 iced = require('./iced').runtime
 
@@ -147,7 +148,7 @@ exports.Dispatch = class Dispatch extends Packetizer
     inv = @_invocations
     @_invocations = {}
     for key,cb of inv
-      cb new Error("EOF from server"), {}
+      cb new E.EofError(), {}
 
   ##-----------------------------------------
 
@@ -173,13 +174,18 @@ exports.Dispatch = class Dispatch extends Packetizer
     if pair? and (hw = @get_hook_wrapper())?
       hw { method : pair[1], thisobj : pair[0], param, response, dispatch : @ }
     else if pair then pair[1].call pair[0], param, response, @
-    else if response? then response.error "unknown method: #{method}"
+    else if response?
+      err = new E.UnknownMethodError method
+      err.method = method
+      response.error @wrap_outgoing_error err
 
   ##-----------------------------------------
 
   # please override me!
   get_handler_this : (m) -> @
   get_hook_wrapper : () -> null
+
+  wrap_outgoing_error : (s) -> s.toString()
 
   # please override me!
   get_handler_pair : (m) ->
