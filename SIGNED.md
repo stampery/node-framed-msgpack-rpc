@@ -3,13 +3,19 @@
 -----BEGIN PGP SIGNATURE-----
 Comment: GPGTools - https://gpgtools.org
 
-iQEcBAABCgAGBQJV1OLRAAoJEJgKPw0B/gTf8ZIH+wTXupPHW1Qc5jN726RfWwDG
-c73i6T4mTPHmsdKUihGiV4MlZYt4Rf0FyDB9T7Xv/x5f/OWg3TKR0IktFLQ/c7OL
-UbqpNSwk6SZFqcDrEF2ntWW4603OMGKhMmHS+fq1ut136iuo0aZfeP83rcCmN02z
-xOObK0aSc2FdFtKIXXtAk1rDzfidfW2RbBoTFAN464fZjYg3MZXYlHCPwv4VDuRb
-9vwFfUZ6YQatcG54yWvyn7SXTPnWzLhi87cBb6C6CuM3jYE0Kwt6gy4VklOabYnc
-CW+J8SBLGFyAmTvZYcUrohjfgkxj9xESxjOIq6udA3ZCkobM+FrlU8r9HqJVYLw=
-=oHjm
+iQIcBAABCgAGBQJV2n2dAAoJEGBSsq0xpmMcsc4QAKM3m4gFO4y8FZNtVPtODdGa
+Nos8H1m0HF+yclxga1/I+CCS+Sd4/Fpkk40TuWOuJres3dpAgsSC/d5G9ZDkWers
+LQwdp8EjCvKiiZkd6GMmMhf41GVpYU3lzG3fx5e04gRai6of428kzn+sl/Tp+X9q
+GwmVTGsDZPFWr9iEVMVqJqtiCYQjEhtyYTRq5mTge492NSMEyeFddUiV3PB9l2N1
+Ss61MqzEk6rNQInDanzKzNqjhA+oXDgky9ki10oqTPCzbG43xJp+MHF7Wi3zKZiH
+E8AK2BTgsbND+VsbVfGV9A8jXoJyl3SVdoJuALSIQFaDiT9r8BqVwMbPjWbfuKJD
++VO9br1bnfraUSzYe9PgnkEsIi2vCQZdKGnSGQCTYCB60vadmAD5RCeo5IIk/Zm5
+m5jtwA+yhEkDzG70F060me8FBNK3TjOTDhZJgWVXbRlfArpyTuTGMMzrF2pAxv2G
+gVXDSGqYPMCop5DsoNqrrf/GDdlvMF80bYlBkTN3yEFkdkNhy8FoWBD/b5cBfz9e
+1ZILGdh6WKg1NVAzYfqS0FUmXLkn3TuYnRi5SbmIlKdYhyTNmzRlp0elZXAt9WMd
+RSrQbYi0xshp1arxX+kfAccHL0kaPnCrp17C/oiurHQPnTo8JHYCvKlf+FsLT1oS
+n4AZPiCTexD0LMs+WdTK
+=AuMk
 -----END PGP SIGNATURE-----
 
 ```
@@ -24,33 +30,33 @@ CW+J8SBLGFyAmTvZYcUrohjfgkxj9xESxjOIq6udA3ZCkobM+FrlU8r9HqJVYLw=
 size   exec  file                          contents                                                        
              ./                                                                                            
 31             .gitignore                  c04ace3e706338d02c8c851fa1ecf6f3e6239bf6198a0573c182e4e5350c8d33
-220            CHANGELOG.md                21177f6858059e78563a2feb202163e565ad90ce1fbf10c3023d2588f241d2ae
+346            CHANGELOG.md                139e2c7f703bdfa8a097811c5e4b96a72e2000a60f84d49e6f2a2fc5d772772b
 1739           Cakefile                    bedb8b17ae1990ac8d999301444a7b6404d50c9dc8324ace29e9ff83ea1b6c03
 1062           LICENSE                     9c750e7ffa7dea995d1217e044766daaf99a9ea2db7141b06e264ea398f4c661
 21426          README.md                   2000659c6bd32a3c5a6463ea90a409ec5d96ba020d7e9707d50cfcb909051f4b
                lib/                                                                                        
-1864             client.js                 00d1d4770142fefbd7a43dde4bab2f5b2b4fa101cc424fa1f9d404c8a875ff8a
-5010             debug.js                  62a6769b26f3527d7b1fa35875eac903ab39c0bcfb92a3cf0b790db50a4290ae
-9508             dispatch.js               9027b08b73c9b129bf16d5efef4e92107443ddc914bf819a444965cc021aac7e
-340              errors.js                 b1d5b4d7ca330fe0ac17b690aa37f0531ff32745a14afaf2a67e97bad072b6c9
-116              iced.js                   158c13589592df0b036d14ba7b2f1f4bba2b048c04b5da303d9140fdd59a425a
-1132             list.js                   4b6ee1c127b22dced434ff72a872e5d899f3e1b84fd68d4a5993cc84579316b6
-9428             listener.js               c4a037ef3b2816b7a13f8208eab020b8c9a2ca22f39cf0fc71405277f5bc94d7
-3236             lock.js                   b6de36e63cd6f5b7598cd99780b93a41200ac459dd49a3fb1813f50586b39028
-2764             log.js                    53941c0eee0c974fad92eb9d5fe015ba04e7509d5429fd68fbca4a4b7cb85160
-1416             main.js                   487bc953de92a6c36ad7a73f96e955e2f7b0bd9f55317f3f047c0e0257b8b8a1
-1112             pack.js                   dea63833f986987898617c896d0314dc8b7f98e0291badca74cc5ad93b59b9c5
-4563             packetizer.js             2568bf361f4caa6c610b219c5ca722e606c7d254ead2749c60b3bb3b68e8a05c
-1927             ring.js                   c46ff0f58ce2894405f711e4dde8e54f51386dc105fd10217d260f1390f5e737
-4485             server.js                 8208eb10218f8b314f4dd4ce3f082721eea1a2b3df1fc59aa4452c830ca579bc
-984              timer.js                  ff8e5eeedd441ee1bcc07db4a80201c9c93ec542b13acf0ab39ba6e3db4a3cf4
-23574            transport.js              66d03982e1cf5767e0066986a9cc42b946e37152df6830bf5b423ad111d2cc71
-26               version.js                c35a4063546d68de6688877880597fe4b4237826fe21fdeeacc3018135b6c845
-795            package.json                cfac7b9e65ad37c3ff794dc3350037a2bf52119092cb50746b7a8370dc87cef4
+1859             client.js                 3c4ab6f17ab48d9434469d6c3737e984fa8d622af3726aa6bcbb2f24004d7318
+5010             debug.js                  1f4538f9871585fe7976c1dd9ecd642a76c395e05ae1bc782a8324404c47dc01
+9852             dispatch.js               20cf9865b4f25e5b394143bb3ed37d8c7e2e47c7d9cf06d92729be02bedcfd73
+340              errors.js                 e7dc76d9935ef9ef065ca574c9d3616a0ddfdf84f4d2e49aec6f8459cdfba91f
+116              iced.js                   ffebf41c56431989ff6c2d660712d5131dbd0a18005827b0ece9f91781592bc6
+1132             list.js                   4ddf31674a7a505cb7dca5dc6e998f42eae6bd0b981dc3d1af140698c8e850de
+9217             listener.js               4aafc02353e700e8b0fd20c44415fccf1307cfab52b4178df42242417ea7fccd
+3231             lock.js                   94acbde2706e02d9dc70acbaa53acfac9eb82bb67b5ed447136ea7f439daeaa8
+2764             log.js                    b0a589077edef303ad773685f562287d324f7e065b27be1a527b9081e219b0de
+1416             main.js                   25db3a06af47781d8a833919ce30fd4e6cfeea4490c8746a5a7e04fe9481d41b
+1112             pack.js                   1c910ab878bba82822c50048cb1ec7e60024bacadf319a9abdaba6394756ffa3
+4563             packetizer.js             3e72451639ab0d65e6135e9fdf00d1c37087e951f3b3d96a9b453c88be507ea9
+1927             ring.js                   390f9c8dc20151fc9125ec2715aa576c82939a4377a71eddda8827b9f97b4dc7
+4485             server.js                 b4bb6d1298a0a5e2d818fd4d26e1f67f941e20fd07a7f5c47909efc218171ddb
+984              timer.js                  ab793c0cfabd0e6e602f7657cc17704a7388b57318a4b233a6bc928376a5a437
+23133            transport.js              8782c7b35cb579ebd86dc994811943a0de780f7d32710d709b5ceca2571231b7
+26               version.js                bff3e2cbc063a0e7c532853faf44abf18b2923fa2e2580be45d425b86163a99f
+795            package.json                1f301c4fe542cd51303fbb710c5235191670b23ce67c10ba87409bb3a963c8e7
                src/                                                                                        
 714              client.iced               6640bbae283ba92516da749894b7740dc6e10db9af48289282e59da045b1498e
 4560             debug.iced                7b2b81b8dae1729ba3d29de7dfac2960d285b7adc7359c4ccf2556bf12b6f70f
-5265             dispatch.iced             8ea66afd86d6e71e3f933baa5af138df8a9f93e9ad5872f967990beb44f34d31
+5444             dispatch.iced             62606eae4bd18de5cfb58e20a996b8bcb01d4ee482612a2cc164cc7abc25870c
 292              errors.iced               9f1ea8d90878bda4d6731f6515c2e8dad362a525affee5016c18bea33c3c195b
 43               iced.iced                 cb4f24fdfd66de1cbb8c2b041ca76637a673d256c4629b16c1cb1de0675fb398
 947              list.iced                 2b0a49c5aaef4b5f1df984e6350167579cdb161bb4da172cc8b1ad7e510ae75c
