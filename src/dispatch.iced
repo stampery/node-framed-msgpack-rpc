@@ -33,11 +33,13 @@ exports.Dispatch = class Dispatch extends Packetizer
     @_handlers = {}
     @_seqid = 1
     @_dbgr = null
+    @_generic_handler = null
     super
 
   ##-----------------------------------------
 
   set_debugger : (d) -> @_dbgr = d
+  set_generic_handler : (h) -> @_generic_handler = h
 
   ##-----------------------------------------
 
@@ -170,7 +172,9 @@ exports.Dispatch = class Dispatch extends Packetizer
       response.debug_msg = debug_msg if response
       debug_msg.call()
 
-    if pair? and (hw = @get_hook_wrapper())?
+    if @_generic_handler?
+      @_generic_handler { method, param, response, dispatch : @ }
+    else if pair? and (hw = @get_hook_wrapper())?
       hw { method : pair[1], thisobj : pair[0], param, response, dispatch : @ }
     else if pair then pair[1].call pair[0], param, response, @
     else if response?

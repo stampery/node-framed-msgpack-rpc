@@ -1,3 +1,8 @@
+## v1.1.9 (2015-08-22)
+
+Features:
+  * Add `generic_handler` which can handle any method and will do the
+    switching itself.
 
 ## v1.1.8 (2015-08-17)
 
