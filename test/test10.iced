@@ -1,4 +1,5 @@
-{server,Transport,Client,debug} = require '../src/main'
+{server,Transport,RobustTransport,Client,debug} = require '../src/main'
+{make_esc} = require 'iced-error'
 
 # The same as test9, but over Unix Domain sockets, and not over
 # TCP Ports...
@@ -48,6 +49,21 @@ test_A = (T, cb) ->
   cb()
 
 ##-----------------------------------------------------------------------
+
+exports.test_unix_domain_socket_rpc_before_connect = (T,cb) ->
+  x = new RobustTransport { path : SOCK }
+  cli = new Client x, "P.1"
+  await
+    cli.invoke "foo", { i : 10 }, defer e1, res
+    x.connect defer e2
+  T.no_error e1
+  T.no_error e2
+  T.equal res, { y : 12 }
+  x.close()
+  cb()
+
+##-----------------------------------------------------------------------
+
 exports.destroy = (cb) ->
   await s.close defer()
   s = null

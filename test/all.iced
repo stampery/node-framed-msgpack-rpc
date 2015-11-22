@@ -1,5 +1,3 @@
-
-
 fs = require 'fs'
 path = require 'path'
 colors = require 'colors'
@@ -35,7 +33,6 @@ class VLogger extends Logger
 
 if argv.d then log.set_default_logger_class VLogger
 else
-  console.log "ok then, set it! #{log.levels.TOP}"
   log.set_default_level log.levels.TOP
 
 ##-----------------------------------------------------------------------
@@ -90,6 +87,9 @@ class TestCase
     await cli.invoke method, arg, defer error, result
     @check_rpc full, error, result, expected
     cb()
+
+  no_error : (e) ->
+    if e? then @error e
 
   error : (e) ->
     console.log e.red
