@@ -241,7 +241,6 @@ exports.Transport = class Transport extends Dispatch
   ##-----------------------------------------
 
   _connect_critical_section : (cb) ->
-    console.log "CCS"
     x = net.connect @net_opts
     x.setNoDelay true unless @do_tcp_delay
 
@@ -364,9 +363,7 @@ exports.RobustTransport = class RobustTransport extends Transport
       else
         i++
         @_info "#{prfx}connecting (attempt #{i})"
-        console.log "AAA"
         await @_connect_critical_section defer err
-        console.log "BBBB"
         if err?
           await setTimeout defer(), @reconnect_delay*1000
         else

@@ -1,7 +1,7 @@
 default: build
 all: build
 
-ICED=iced # node_modules/.bin/iced
+ICED=node_modules/.bin/iced
 BUILD_STAMP=build-stamp
 TEST_STAMP=test-stamp
 

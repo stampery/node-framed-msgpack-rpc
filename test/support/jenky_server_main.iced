@@ -1,8 +1,13 @@
 {log,server,ReconnectTransport,Client} = require '../../src/main'
+fs = require 'fs'
 
-exports.main = () ->
-
-  PORT = 8881
+exports.main = (argv) ->
+  args = {}
+  if argv.u?
+    args.path = argv.u
+    await fs.unlink args.path, defer err
+  else
+    args.port = 8881
 
   # Since we're being forked, do this.  We shouldn't really
   # be doing this in "-d" mode to all.iced, but it's OK for now.
@@ -15,10 +20,8 @@ exports.main = () ->
       res.result { y : arg.i + 2 }
       process.exit 0
 
-  s = new server.ContextualServer 
-    port : PORT
-    classes :
-      "P.1" : P_v1
+  args.classes = { "P.1" : P_v1 }
+  s = new server.ContextualServer args
   await s.listen defer err
   process.send { ok : true }
 
