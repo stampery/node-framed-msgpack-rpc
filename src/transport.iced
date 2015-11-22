@@ -1,4 +1,4 @@
-net = require 'net'
+{get_net_module} = require './net'
 {Lock} = require './lock'
 {Dispatch} = require './dispatch'
 log = require './log'
@@ -241,7 +241,7 @@ exports.Transport = class Transport extends Dispatch
   ##-----------------------------------------
 
   _connect_critical_section : (cb) ->
-    x = net.connect @net_opts
+    x = get_net_module().connect @net_opts
     x.setNoDelay true unless @do_tcp_delay
 
     # Some local switch codes....

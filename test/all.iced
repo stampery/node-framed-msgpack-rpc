@@ -2,7 +2,7 @@ fs = require 'fs'
 path = require 'path'
 colors = require 'colors'
 deep_equal = require 'deep-equal'
-{debug,log,Logger,RobustTransport,Transport,Client} = require '../src/main'
+{net,debug,log,Logger,RobustTransport,Transport,Client} = require '../src/main'
 iced = require('../src/iced').runtime
 util = require 'util'
 
@@ -200,6 +200,7 @@ class Runner
   ##-----------------------------------------
 
   run : (cb) ->
+    net.set_net_module require 'net'
     await @load_files defer ok
     await @run_files defer() if ok
     @report()

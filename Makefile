@@ -1,7 +1,7 @@
 default: build
 all: build
 
-ICED=node_modules/.bin/iced
+ICED=iced # node_modules/.bin/iced
 BUILD_STAMP=build-stamp
 TEST_STAMP=test-stamp
 
@@ -22,6 +22,7 @@ $(BUILD_STAMP): \
 	lib/lock.js \
 	lib/log.js \
 	lib/main.js \
+	lib/net.js \
 	lib/pack.js \
 	lib/packetizer.js \
 	lib/ring.js \

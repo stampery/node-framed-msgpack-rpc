@@ -1,7 +1,8 @@
-{log,server,ReconnectTransport,Client} = require '../../src/main'
+{net,log,server,ReconnectTransport,Client} = require '../../src/main'
 fs = require 'fs'
 
 exports.main = (argv) ->
+  net.set_net_module require 'net'
   args = {}
   if argv.u?
     args.path = argv.u

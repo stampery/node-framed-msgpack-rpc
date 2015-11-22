@@ -1,5 +1,5 @@
 
-{log,errors,server,transport,client} = require "../"
+{net,log,errors,server,transport,client} = require "../"
 
 PORT = 19983
 
@@ -9,7 +9,7 @@ s = null
 #------------------------------------------------------
 
 exports.test_1 = (T,cb) ->
-
+  net.set_net_module require 'net'
   s = new server.Server
     port : PORT
     programs :

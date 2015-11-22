@@ -6,6 +6,7 @@ exports.log          = log          = require './log'
 exports.debug        = debug        = require './debug'
 exports.pack         = pack         = require './pack'
 exports.errors       = errors       = require './errors'
+exports.net          = net          = require './net'
 
 exports.dispatch  = require './dispatch'
 exports.listener  = require './listener'
@@ -18,6 +19,7 @@ exports.RobustTransport = transport.RobustTransport
 exports.Logger = log.Logger
 exports.createTransport = transport.createTransport
 
+##=======================================================================
 ##=======================================================================
 # Version management...
 
