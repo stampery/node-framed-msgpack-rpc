@@ -68,7 +68,7 @@ exports.Packetizer = class Packetizer
     rc = 0
     enc = 'binary'
     for b in bufs
-      @_raw_write b.toString(enc), enc
+      @_raw_write b2, enc
     return true
 
   ##-----------------------------------------
@@ -118,24 +118,25 @@ exports.Packetizer = class Packetizer
   ##-----------------------------------------
 
   _get_msg: () ->
-    l = @_next_msg_len
+    # l = @_next_msg_len
     
-    ret = if l > @_ring.len() or not (b = @_ring.grab l)?
-      @WAIT
-    else if not ([pw,msg] = unpack b)? or not msg?
-      @_packetize_error "bad encoding found in data/payload; len=#{l}"
-      @ERR
-    else if not is_array msg
-      @_packetize_error "non-array found in data stream: #{JSON.stringify msg}"
-      @ERR
-    else
-      @_ring.consume l
-      @_state = @FRAME
-      # Call down one level in the class hierarchy to the dispatcher
-      @_dispatch msg
-      @OK
-    @_packetize_warning pw if pw?
-    return ret
+    # ret = if l > @_ring.len() or not (b = @_ring.grab l)?
+    #   @WAIT
+    # else if not ([pw,msg] = unpack b)? or not msg?
+    #   @_packetize_error "bad encoding found in data/payload; len=#{l}"
+    #   @ERR
+    # else if not is_array msg
+    #   @_packetize_error "non-array found in data stream: #{JSON.stringify msg}"
+    #   @ERR
+    # else
+    #   @_ring.consume l
+    #   @_state = @FRAME
+    #   # Call down one level in the class hierarchy to the dispatcher
+      
+    #   @OK
+    # @_packetize_warning pw if pw?
+    @_dispatch unpack msg
+    return @OK
   
   ##-----------------------------------------
   
