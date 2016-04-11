@@ -56,7 +56,7 @@ exports.Packetizer = class Packetizer
   
   constructor : ->
     @_ring = new Ring()
-    @_state = @FRAME
+    @_state = @DATA
     @_next_msg_len = 0
 
   ##-----------------------------------------
