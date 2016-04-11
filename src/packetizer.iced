@@ -143,7 +143,7 @@ exports.Packetizer = class Packetizer
     @_ring.buffer m
     go = @OK
     while go is @OK
-      go = if @_state is @FRAME then @_get_frame() else @_get_msg()
+      go = @_get_msg()
      
   ##-----------------------------------------
 
