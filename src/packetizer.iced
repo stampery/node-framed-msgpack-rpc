@@ -135,7 +135,7 @@ exports.Packetizer = class Packetizer
       
     #   @OK
     # @_packetize_warning pw if pw?
-    @_dispatch unpack msg
+    @_dispatch unpack b
     return @OK
   
   ##-----------------------------------------
