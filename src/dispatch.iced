@@ -20,7 +20,7 @@ exports.Reponse = class Reponse
 
 ##=======================================================================
 
-exports.Dispatch = class Dispatch extends Packetizer
+exports.Dispatch = class Dispatch
 
   INVOKE : 0
   RESPONSE : 1
