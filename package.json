@@ -17,7 +17,7 @@
   "dependencies": {
     "iced-error": "0.0.9",
     "iced-runtime": "^1.0.1",
-    "purepack": ">=1"
+    "msgpack": "^1.0.2"
   },
   "devDependencies": {
     "colors": "~0.6.2",

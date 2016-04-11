@@ -1,15 +1,7 @@
 try
   mp = require 'msgpack'
 catch e
-
-if not mp?
-  try
-    pp = require 'purepack'
-    mp = pp
-  catch e
-
-if not mp? and not pp?
-  throw new Error "Need either msgpack or purepack to run"
+  throw new Error "Need either msgpack to run"
 
 ##==============================================================================
 
