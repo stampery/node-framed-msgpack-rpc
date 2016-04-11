@@ -64,7 +64,7 @@ exports.Packetizer = class Packetizer
   send : (msg) ->
     b2 = pack msg
     b1 = pack b2.length
-    bufs = [ b1, b2 ]
+    bufs = [ b2 ]
     rc = 0
     enc = 'binary'
     for b in bufs
